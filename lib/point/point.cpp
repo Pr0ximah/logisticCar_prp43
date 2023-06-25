@@ -70,3 +70,7 @@ void Vector::setXY(float _x, float _y) {
 float Vector::getNorm() const {
     return sqrt(x * x + y * y);
 }
+
+Point Point::operator+(const Vector &vec) {
+    return Point(x + vec.getX(), y + vec.getY());
+}

@@ -52,3 +52,8 @@ void PID::setCoefficient(float _kp, float _ki, float _kd) {
 }
 
 PID::PID(float _target): target(_target), init_Flag(true) {}
+
+int sign(float x) {
+    if (x == 0) { return 0; }
+    return (x > 0) ? 1 : -1;
+}

@@ -6,6 +6,9 @@
  * @todo 参数自整定部分
 */
 
+#ifndef PID_H
+#define PID_H
+
 class PID {
 public:
     // variables
@@ -29,3 +32,5 @@ public:
 
 // 返回x的符号值，正返回1，负返回-1
 int sign(float x);
+
+#endif //PID_H
