@@ -8,6 +8,8 @@
 #ifndef POINT_H
 #define POINT_H
 
+class Vector;
+
 // 二维点类
 class Point {
 private:
@@ -25,6 +27,7 @@ public:
     void setXY(const Point &pt);
 
     Point &operator=(const Point &pt);
+    Vector operator-(const Point &pt);
 };
 
 // 二维向量类
