@@ -5,6 +5,9 @@
  * @brief 常量定义
 */
 
+#ifndef CONST_DEF_H
+#define CONST_DEF_H
+
 // 以下参数根据线路决定
 // ===================================================
 const float IR_VOLTAGE = 3.3;
@@ -40,3 +43,5 @@ const float IRange = 50;
 // 角加速度单位换算系数(换算为单位: g)
 const float ANGLE_ACCE_COEFFICIENT = 65.5;
 // ===================================================
+
+#endif //CONST_DEF_H

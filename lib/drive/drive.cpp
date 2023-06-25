@@ -1,7 +1,6 @@
 #include "drive.h"
-#include "Arduino.h"
+#include <Arduino.h>
 #include <math.h>
-#include "portDef.h"
 
 // 初始化设置
 DriveControl::DriveControl() {
@@ -9,13 +8,11 @@ DriveControl::DriveControl() {
     imuInit();
     // pos初始化
     posInit();
-    // 电机端口输出开
-
-}
-
-DriveControl::~DriveControl() {
-    // 电机端口输出关
-
+    // 电机端口初始化
+    pinMode(port_motor_FL, OUTPUT);
+    pinMode(port_motor_FR, OUTPUT);
+    pinMode(port_motor_BL, OUTPUT);
+    pinMode(port_motor_BR, OUTPUT);
 }
 
 void DriveControl::setTar(Point p) {
@@ -42,7 +39,13 @@ void DriveControl::gotoTar() {
 }
 
 void DriveControl::moveX(float tarX) {
+    /*
     PID pid = {0};
+    
+    // pid初始化
+    // @todo 正式版本移除
+    pid.setCoefficient(80, 0.5, 2);
+
     float controlVal = 0;
     statusUpdate();
     while (fabs(posCur.getX() - tarX) > POS_ERROR_TOLERANCE) {
@@ -51,10 +54,16 @@ void DriveControl::moveX(float tarX) {
         statusUpdate();
         controlVal = pid.update(angle);
     }
+    stop();*/
 }
 
 void DriveControl::moveY(float tarY) {
     PID pid = {0};
+
+    // pid初始化
+    // @todo 正式版本移除
+    pid.setCoefficient(80, 0.5, 2);
+
     float controlVal = 0;
     statusUpdate();
     while (fabs(posCur.getY() - tarY) > POS_ERROR_TOLERANCE) {
@@ -73,7 +82,26 @@ void DriveControl::statusUpdate() {
 void DriveControl::forward(float controlVal) {
     // 电机控制
     // -----------------
+    float controlArr[4] = {0, 0, 0, 0};
+    if (controlVal > 0) {  // 右偏
+        controlArr[0] = -controlVal;
+        controlArr[2] = -controlVal;
+    } else if (controlVal < 0) {  // 左偏
+        controlArr[1] = controlVal;
+        controlArr[3] = controlVal;
+    }
+    analogWrite(port_motor_FL, 254 + controlArr[0]);
+    analogWrite(port_motor_FR, 254 + controlArr[1]);
+    analogWrite(port_motor_BL, 254 + controlArr[2]);
+    analogWrite(port_motor_BR, 254 + controlArr[3]);
     // -----------------
+}
+
+void DriveControl::stop() {
+    analogWrite(port_motor_FL, 0);
+    analogWrite(port_motor_FR, 0);
+    analogWrite(port_motor_BL, 0);
+    analogWrite(port_motor_BR, 0);
 }
 
 void DriveControl::imuUpdate() {
@@ -123,7 +151,7 @@ void DriveControl::posUpdate() {
         disLast[i] = disCur[i];
     }
     for (int i = 0; i < 4; i++) {
-        disCur[i] = IR[i].IR_ReadDis();
+        disCur[i] = IRArray[i].IR_ReadDis();
     }
     float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-1)
     for (int i = 0; i < 4; i++) {
@@ -136,39 +164,46 @@ void DriveControl::posUpdate() {
     // 设置y坐标
     // -------------------------------
     float deltaY;  // Y值变化
-    float temp;  // 取平均值求和的临时变量
+    float tempY;  // 取平均值求和的临时变量
     for (int i = 0; i < 2; i++) {
         if (deltaDisTemp[i] == -999) { //该值无效
             continue;
         } else {
-            temp += sign(deltaDisTemp[0]) * fabs(deltaDisTemp[i]);
+            tempY += sign(deltaDisTemp[0]) * fabs(deltaDisTemp[i]);
         }
     }
-    temp /= 2;
-    deltaY = -1 * temp;
+    tempY /= 2;
+    deltaY = -1 * tempY;
     // -------------------------------
     // 设置x坐标
     // -------------------------------
     float deltaX;  // X值变化
-    float temp;  // 取平均值求和的临时变量
+    float tempX;  // 取平均值求和的临时变量
     for (int i = 2; i < 4; i++) {
         if (deltaDisTemp[i] == -999) { //该值无效
             continue;
         } else {
-            temp += sign(deltaDisTemp[2]) * fabs(deltaDisTemp[i]);
+            tempX += sign(deltaDisTemp[2]) * fabs(deltaDisTemp[i]);
         }
     }
-    temp /= 2;
-    deltaX = temp;
+    tempX /= 2;
+    deltaX = tempX;
     // -------------------------------
     posCur = posCur + Vector(deltaX, deltaY);
 }
 
 void DriveControl::posInit() {
+    // 红外模块引脚初始化
+    // -----------------------
+    pinMode(port_IR_F, INPUT);
+    pinMode(port_IR_B, INPUT);
+    pinMode(port_IR_L, INPUT);
+    pinMode(port_IR_R, INPUT);
+    // -----------------------
     for (int i = 0; i < 4; i++) {
         float valueSum = 0;
         for (int j = 0; j < 3; j++) {  // 测三次取平均值初始化
-            valueSum += IR[i].IR_ReadDis();
+            valueSum += IRArray[i].IR_ReadDis();
             delay(100);
         }
         disOri[i] = valueSum / 3;
