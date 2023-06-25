@@ -5,6 +5,7 @@
  * @brief 存储端口定义
 */
 
+// 电机端口
 const int port_motor_FL = 1;  // 驱动电机左前
 const int port_motor_FR = 2;  // 驱动电机右前
 const int port_motor_BL = 3;  // 驱动电机左后

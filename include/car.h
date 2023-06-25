@@ -13,8 +13,9 @@
 
 class Car {
 private:
-    DriveControl drive;
+    
 public:
+    DriveControl drive;  // 应该放private！做测试时写到public里
 };
 
 #endif //CAR_H
