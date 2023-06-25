@@ -7,6 +7,8 @@
 DriveControl::DriveControl() {
     // imu初始化
     imuInit();
+    // pos初始化
+    posInit();
     // 电机端口输出开
 
 }
@@ -65,6 +67,7 @@ void DriveControl::moveY(float tarY) {
 
 void DriveControl::statusUpdate() {
     imuUpdate();
+    posUpdate();
 }
 
 void DriveControl::forward(float controlVal) {
@@ -113,4 +116,62 @@ float DriveControl::imuReadAngleAcce() {
     int16_t temp1, temp2, temp3, temp4, temp5;  // 不使用这些变量，仅用于imu函数传参
     imu.getMotion6(&temp1, &temp2, &temp3, &temp4, &temp5, &angleAcceOri); //获取三轴加速度和三轴角速度初始值
     return angleAcceOri / ANGLE_ACCE_COEFFICIENT - angleAcce0_bias;
+}
+
+void DriveControl::posUpdate() {
+    for (int i = 0; i < 4; i++) {  // 设置disLast
+        disLast[i] = disCur[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        disCur[i] = IR[i].IR_ReadDis();
+    }
+    float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-1)
+    for (int i = 0; i < 4; i++) {
+        if (fabs(disCur[i] - disLast[i]) > IR_DATA_TOLERANCE) {
+            deltaDisTemp[i] = -999;
+        } else {
+            deltaDisTemp[i] = disCur[i] - disLast[i];
+        }
+    }
+    // 设置y坐标
+    // -------------------------------
+    float deltaY;  // Y值变化
+    float temp;  // 取平均值求和的临时变量
+    for (int i = 0; i < 2; i++) {
+        if (deltaDisTemp[i] == -999) { //该值无效
+            continue;
+        } else {
+            temp += sign(deltaDisTemp[0]) * fabs(deltaDisTemp[i]);
+        }
+    }
+    temp /= 2;
+    deltaY = -1 * temp;
+    // -------------------------------
+    // 设置x坐标
+    // -------------------------------
+    float deltaX;  // X值变化
+    float temp;  // 取平均值求和的临时变量
+    for (int i = 2; i < 4; i++) {
+        if (deltaDisTemp[i] == -999) { //该值无效
+            continue;
+        } else {
+            temp += sign(deltaDisTemp[2]) * fabs(deltaDisTemp[i]);
+        }
+    }
+    temp /= 2;
+    deltaX = temp;
+    // -------------------------------
+    posCur = posCur + Vector(deltaX, deltaY);
+}
+
+void DriveControl::posInit() {
+    for (int i = 0; i < 4; i++) {
+        float valueSum = 0;
+        for (int j = 0; j < 3; j++) {  // 测三次取平均值初始化
+            valueSum += IR[i].IR_ReadDis();
+            delay(100);
+        }
+        disOri[i] = valueSum / 3;
+        disCur[i] = disOri[i];  // 初始化一开始的位置
+    }
 }

@@ -28,6 +28,7 @@ public:
 
     Point &operator=(const Point &pt);
     Vector operator-(const Point &pt);
+    Point operator+(const Vector &vec);
 };
 
 // 二维向量类

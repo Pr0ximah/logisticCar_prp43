@@ -5,6 +5,11 @@
  * @brief 常量定义
 */
 
+// 以下参数根据线路决定
+// ===================================================
+const float IR_VOLTAGE = 3.3;
+// ===================================================
+
 // 以下参数可以自行设置
 // ===================================================
 // 小车行进状态更新时间间隔(ms)
@@ -12,6 +17,9 @@ const int MOVE_STATUS_UPDATE_TIME_INTERVAL = 500;
 
 // 小车位移偏差允许的最大值(cm)
 const float POS_ERROR_TOLERANCE = 1;
+
+// IR测距时两次测量之间差距允许的最大值(cm)
+const float IR_DATA_TOLERANCE = 2;
 
 // 初始化imu的采样数据数量
 const int IMUINIT_SAMPLE_NUM = 500;
