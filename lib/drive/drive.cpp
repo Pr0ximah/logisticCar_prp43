@@ -153,7 +153,7 @@ void DriveControl::posUpdate() {
     for (int i = 0; i < 4; i++) {
         disCur[i] = IRArray[i].IR_ReadDis();
     }
-    float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-1)
+    float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-999)
     for (int i = 0; i < 4; i++) {
         if (fabs(disCur[i] - disLast[i]) > IR_DATA_TOLERANCE) {
             deltaDisTemp[i] = -999;
