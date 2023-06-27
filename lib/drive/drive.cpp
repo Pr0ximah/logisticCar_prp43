@@ -43,9 +43,9 @@ void DriveControl::moveX(float tarX) {
     PID pid = {0};
     
     // pid初始化
-    // @todo 正式版本移除
+    /// @todo 正式版本移除
     pid.setCoefficient(80, 0.5, 2);
-
+    
     float controlVal = 0;
     statusUpdate();
     while (fabs(posCur.getX() - tarX) > POS_ERROR_TOLERANCE) {
@@ -61,7 +61,7 @@ void DriveControl::moveY(float tarY) {
     PID pid = {0};
 
     // pid初始化
-    // @todo 正式版本移除
+    /// @todo 正式版本移除
     pid.setCoefficient(80, 0.5, 2);
 
     float controlVal = 0;
@@ -153,7 +153,7 @@ void DriveControl::posUpdate() {
     for (int i = 0; i < 4; i++) {
         disCur[i] = IRArray[i].IR_ReadDis();
     }
-    float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-1)
+    float deltaDisTemp[4];  // 临时存储现在的距离差值(若偏差过大会被置为-999)
     for (int i = 0; i < 4; i++) {
         if (fabs(disCur[i] - disLast[i]) > IR_DATA_TOLERANCE) {
             deltaDisTemp[i] = -999;
