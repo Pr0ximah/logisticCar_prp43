@@ -33,8 +33,8 @@ private:
     float disCur[4];   // 本次采样的距离信息
     Point posCur, posTar;  // 世界坐标系
     MPU6050 imu;  // 陀螺仪初始化
-    IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};
-    float angle = 0;
+    IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
+    float angle = 0;   // 小车车头角度
     float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
 public:
     DriveControl();

@@ -43,9 +43,9 @@ void DriveControl::moveX(float tarX) {
     PID pid = {0};
     
     // pid初始化
-    // @todo 正式版本移除
+    /// @todo 正式版本移除
     pid.setCoefficient(80, 0.5, 2);
-
+    
     float controlVal = 0;
     statusUpdate();
     while (fabs(posCur.getX() - tarX) > POS_ERROR_TOLERANCE) {
@@ -61,7 +61,7 @@ void DriveControl::moveY(float tarY) {
     PID pid = {0};
 
     // pid初始化
-    // @todo 正式版本移除
+    /// @todo 正式版本移除
     pid.setCoefficient(80, 0.5, 2);
 
     float controlVal = 0;
