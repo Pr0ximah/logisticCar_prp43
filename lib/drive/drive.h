@@ -65,7 +65,7 @@ private:
     void stop();
 
     // 更新陀螺仪数据
-    void imuUpdate();
+    float imuUpdate();
 
     // 更新位置数据
     void posUpdate();

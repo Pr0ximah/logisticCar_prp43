@@ -104,7 +104,7 @@ void DriveControl::stop() {
     analogWrite(port_motor_BR, 0);
 }
 
-void DriveControl::imuUpdate() {
+float DriveControl::imuUpdate() {
     static bool firstTime_flag = true;
     static int updateTimeCur;
     static int updateTimeLast;
@@ -112,15 +112,20 @@ void DriveControl::imuUpdate() {
     if (firstTime_flag) { //若第一次，则不改变角度值
         firstTime_flag = false;
         updateTimeLast = millis();
-        return;
+        return angle;
     } else {
         float angleAcce;
         updateTimeCur = millis();
         angleAcce = imuReadAngleAcce();
+        // 如果超过了允许的最大值则设置为最大值
+        if (angleAcce > ANGLE_ACCE_TOL) {
+            angleAcce = ANGLE_ACCE_TOL;
+        }
         imuUpdateTimeInterval = updateTimeCur - updateTimeLast;
         updateTimeLast = updateTimeCur;
         angle += angleAcce * imuUpdateTimeInterval / 1000;
     }
+    return angle;
 }
 
 void DriveControl::imuInit() {

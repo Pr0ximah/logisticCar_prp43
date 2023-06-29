@@ -1,4 +1,5 @@
 #include "PID.h"
+#include <Arduino.h>
 #include <math.h>
 #include <time.h>
 #include "constDef.h"
@@ -35,11 +36,13 @@ float PID::update(float current) {
             secStable = 0;
             outVal = P + I + D;
         }
-        secNow = time(nullptr);
+        secNow = millis() / 1000;
         if (init_Flag) {
             secLast = secNow;
         }
-        secStable += secNow - secLast;
+        if (fabs(errorNow <= errorTol)) {
+            secStable += secNow - secLast;
+        }
         secLast = secNow;
         errorLast = errorNow;
         return outVal;

@@ -27,6 +27,9 @@ const float IR_DATA_TOLERANCE = 2;
 // 初始化imu的采样数据数量
 const int IMUINIT_SAMPLE_NUM = 500;
 
+// 角加速度允许的最大值
+const int ANGLE_ACCE_TOL = 1000;
+
 // PID相关
 // -------------------------
 //允许的误差范围
