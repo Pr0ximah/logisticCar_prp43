@@ -46,6 +46,10 @@ public:
 
     // 获取模长
     float getNorm() const;
+
+    // 获取角度(弧度制)
+    // 以y轴正方向为0，逆时针为正
+    float getAngle() const;
 };
 
 #endif //POINT_H

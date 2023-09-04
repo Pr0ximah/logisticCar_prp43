@@ -15,8 +15,8 @@ void loop() {
 
 /**
  * @Pr0ximah
- * @date 23.06.25
- * @brief debug模式测试代码1
+ * @date 23.09.04
+ * @brief debug模式测试代码
 */
 #include <Arduino.h>
 #include <Wire.h>
@@ -33,6 +33,6 @@ void loop() {
   if (firstTime_flag) {
     DriveControl testModule;
     firstTime_flag = false;
-    testModule.gotoPoint(0, 20);
+    testModule.driveByAngle(100, 0);
   }
 }

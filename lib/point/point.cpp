@@ -74,3 +74,7 @@ float Vector::getNorm() const {
 Point Point::operator+(const Vector &vec) {
     return Point(x + vec.getX(), y + vec.getY());
 }
+
+float Vector::getAngle() const {
+    return atan2(-x, y);
+}

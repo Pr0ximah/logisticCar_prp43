@@ -28,14 +28,16 @@
 // 封装的移动控制，可以设置目标点，小车移动到对应位置
 class DriveControl {
 private:
-    float disOri[4];   // 原始距离信息[F, B, L, R]，用于初始化修正，修正后建立世界坐标系
-    float disLast[4];  // 上一次采样时的距离信息
-    float disCur[4];   // 本次采样的距离信息
+    // float disOri[4];   // 原始距离信息[F, B, L, R]，用于初始化修正，修正后建立世界坐标系
+    // float disLast[4];  // 上一次采样时的距离信息
+    // float disCur[4];   // 本次采样的距离信息
     Point posCur, posTar;  // 世界坐标系
-    MPU6050 imu;  // 陀螺仪初始化
-    IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
-    float angle = 0;   // 小车车头角度
-    float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
+    // MPU6050 imu;  // 陀螺仪初始化
+    // IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
+    // float angle = 0;   // 小车车头角度
+    // float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
+    enum driveDir{dFWD, dLFT, dRHT, dBCK};
+    enum motorDir{FWD, BCK};
 public:
     DriveControl();
     void setTar(Point p);
@@ -59,9 +61,16 @@ private:
 
     // 移动的直接控制，通过函数控制移动的方向和启动、停止
     // 带方向控制，读取小车状态信息，自动修正车头方向
-    void forward(float controlVal);
-    void left(float controlVal);
-    void right(float controlVal);
+
+    // speed_percent: 前进速度(百分制);  dir: 目标方向向量
+    void driveByVector(float speed_percent, Vector vecTar);
+
+public:
+    /// @todo: 先暂时放到public里，正式版放进private
+    // speed_percent: 前进速度(百分制);  angleTar: 目标方向(弧度制)
+    void driveByAngle(float speed_percent, float angleTar);
+
+private:
     void stop();
 
     // 更新陀螺仪数据
@@ -72,6 +81,12 @@ private:
 
     // 读取陀螺仪当前读取到的角加速度值
     float imuReadAngleAcce();
+
+    // 四轮电机驱动的百分制控制
+    void rotateByPercentageFL(double percent, motorDir dir);
+    void rotateByPercentageFR(double percent, motorDir dir);
+    void rotateByPercentageBL(double percent, motorDir dir);
+    void rotateByPercentageBR(double percent, motorDir dir);
 };
 
 #endif //DRIVE_H
