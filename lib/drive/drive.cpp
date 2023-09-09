@@ -3,13 +3,14 @@
 #include <math.h>
 
 // 初始化设置
-DriveControl::DriveControl() {
+DriveControl::DriveControl() : encoder_FL(port_Encoder_FL_A, port_Encoder_FL_B, 778) {
     // IMU禁用
     // // imu初始化
     // imuInit();
 
     // pos初始化
     posInit();
+
     // 电机端口初始化
     pinMode(port_motor_FL, OUTPUT);
     pinMode(port_motor_FR, OUTPUT);

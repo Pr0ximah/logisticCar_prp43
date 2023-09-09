@@ -22,17 +22,16 @@ void loop() {
 #include <Wire.h>
 #include <I2Cdev.h>
 #include "drive.h"
+#include "encoder.h"
 
 bool firstTime_flag = true;
+Encoder ecd(2, 3, 778);
 
 void setup() {
-  
+  Serial.begin(9600);
 }
 
 void loop() {
-  if (firstTime_flag) {
-    DriveControl testModule;
-    firstTime_flag = false;
-    testModule.driveByAngle(100, 0);
-  }
+  ecd.update();
+  Serial.println(ecd.getAbsoluteAngle());
 }

@@ -23,6 +23,7 @@
 #include "portDef.h"
 #include "PID.h"
 #include "IR.h"
+#include "encoder.h"
 #include <MPU6050.h>
 
 // 封装的移动控制，可以设置目标点，小车移动到对应位置
@@ -36,6 +37,7 @@ private:
     // IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
     // float angle = 0;   // 小车车头角度
     // float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
+    Encoder encoder_FL;     // 四个轮子的电机编码器
     enum driveDir{dFWD, dLFT, dRHT, dBCK};
     enum motorDir{FWD, BCK};
 public:

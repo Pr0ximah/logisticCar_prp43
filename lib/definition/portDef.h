@@ -24,4 +24,14 @@ const int port_dir_BR = 8;    // 右后电机方向
 // const int port_IR_L = 7;  // 左侧红外
 // const int port_IR_R = 8;  // 右侧红外
 
+// 电机编码器接口
+const int port_Encoder_FL_A = 9;   // 左前电机编码器A相
+const int port_Encoder_FL_B = 10;  // 左前电机编码器B相
+const int port_Encoder_FR_A = 11;  // 右前电机编码器A相
+const int port_Encoder_FR_B = 12;  // 右前电机编码器B相
+const int port_Encoder_BL_A = 13;  // 左后电机编码器A相
+const int port_Encoder_BL_B = 14;  // 左后电机编码器B相
+const int port_Encoder_BR_A = 15;  // 右后电机编码器A相
+const int port_Encoder_BR_B = 16;  // 右后电机编码器B相
+
 #endif //PORT_DEF_H

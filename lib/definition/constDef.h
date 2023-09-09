@@ -45,6 +45,8 @@ const float IRange = 50;
 // ===================================================
 // 角加速度单位换算系数(换算为单位: g)
 const float ANGLE_ACCE_COEFFICIENT = 65.5;
+// 车轮直径(mm)
+const int WHEEL_DIAMETER = 220;
 // ===================================================
 
 #endif //CONST_DEF_H
