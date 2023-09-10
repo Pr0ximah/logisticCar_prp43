@@ -38,7 +38,7 @@ private:
     // IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
     // float angle = 0;   // 小车车头角度
     // float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
-    Encoder encoder_FL, encoder_FR;     // 左前轮和右后轮的电机编码器
+    Encoder encoders;     // 左前轮和右后轮的电机编码器
     enum driveDir{dFWD, dLFT, dRHT, dBCK};
     enum motorDir{FWD, BCK};
 public:
@@ -73,9 +73,8 @@ public:
     // speed_percent: 前进速度(百分制);  angleTar: 目标方向(弧度制)
     void driveByAngle(float speed_percent, float angleTar);
 
-private:
     void stop();
-
+private:
     // 更新陀螺仪数据
     float imuUpdate();
 

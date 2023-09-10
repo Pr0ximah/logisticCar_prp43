@@ -2,13 +2,12 @@
 #include <Arduino.h>
 #include <math.h>
 
-double Encoder_FL_Coefficient = 799;
-double Encoder_FR_Coefficient = 799;
+double Encoder_FL_Coefficient = 1595.6;
+double Encoder_FR_Coefficient = 1599.6;
 
 // 初始化设置
 DriveControl::DriveControl() : 
-    encoder_FL(port_Encoder_FL_A, port_Encoder_FL_B, Encoder_FL_Coefficient), 
-    encoder_FR(port_Encoder_FR_A, port_Encoder_FR_B, Encoder_FR_Coefficient)
+    encoders(port_Encoder_FL_A, port_Encoder_FL_B, port_Encoder_FR_A, port_Encoder_FR_B, Encoder_FL_Coefficient, Encoder_FR_Coefficient) 
 {
     // IMU禁用
     // // imu初始化
@@ -74,19 +73,16 @@ void DriveControl::statusUpdate() {
 }
 
 void DriveControl::posUpdate() {
-    encoder_FL.update();
-    float disWheelFL = encoder_FL.getAngle();
-    encoder_FR.update();
-    float disWheelFR = encoder_FR.getAngle();
-    // Serial.print(posCur.getX());
-    Serial.print(disWheelFL);
+    encoders.update();
+    float disWheelFL = encoders.getDisOfWheel(Encoder::L);
+    float disWheelFR = encoders.getDisOfWheel(Encoder::R);
+    Serial.print(posCur.getX());
     Serial.print(" ");
-    // Serial.print(posCur.getY());
-    Serial.print(disWheelFR);
+    Serial.println(posCur.getY());
     posCur = Point(disWheelFL - disWheelFR, disWheelFL + disWheelFR);
     heading = atan2(disWheelFR, disWheelFL) - PI / 4;
-    Serial.print(" ");
-    Serial.println(heading);
+    // Serial.print(" ");
+    // Serial.println(heading);
 }
 
 // void DriveControl::forward(float controlVal) {
@@ -119,6 +115,7 @@ void DriveControl::driveByAngle(float speed_percent, float angleTar) {
         rotateByPercentageBL(speed_percent, motorDir::FWD);
         rotateByPercentageFL(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
         rotateByPercentageBR(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
+        Serial.println(speed_percent * tan(PI / 4 - angleTar));
     } else if (PI / 2 <= angleTar && angleTar <= PI) {
         rotateByPercentageFL(speed_percent, motorDir::BCK);
         rotateByPercentageBR(speed_percent, motorDir::BCK);

@@ -31,17 +31,17 @@ void setup() {
 }
 
 void loop() {
-  // Serial.println(digitalRead(4));
-  // delay(20);
-  delay(5000);
+  delay(500);
   if (firstTime_flag) {
     Car car;
-    car.drive.gotoPoint(0, 100);
+    car.drive.driveByAngle(100, PI / 6);
+    delay(5000);
+    car.drive.stop();
     firstTime_flag = false;
   }
   // if (firstTime_flag) {
   //   firstTime_flag = false;
-  //   Encoder enc(port_Encoder_FL_A, port_Encoder_FL_B, 799);
-  //   enc.testCoefficient();
+  //   Encoder enc(port_Encoder_FL_A, port_Encoder_FL_B, port_Encoder_FR_A, port_Encoder_FR_B, 799, 799);
+  //   enc.testCoefficient(Encoder::R);
   // }
 }
