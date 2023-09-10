@@ -35,6 +35,10 @@ Point &Point::operator=(const Point &pt) {
     return *this;
 }
 
+Point Point::operator+(const Point &pt) {
+    return Point(x + pt.x, y + pt.y);
+}
+
 Vector Point::operator-(const Point &pt) {
     return Vector(x - pt.x, y - pt.y);
 }

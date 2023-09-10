@@ -4,12 +4,12 @@
 
 Encoder *Encoder::_ISRPointer = nullptr;
 int Encoder::s_id = 0;
-Encoder *Encoder::objArray[4] = {nullptr, nullptr, nullptr, nullptr};
+Encoder *Encoder::objArray[2] = {nullptr, nullptr};
 
 Encoder::Encoder(int _portA, int _portB, int _coefficient) : COEFFICIENT_PER_ROUND(_coefficient)
 {
     // 当前对象id设置
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 2; i++) {
         if (objArray[i] == nullptr) {
             id = i;
             objArray[i] = this;
@@ -44,22 +44,32 @@ int Encoder::getRound() const {
     return numRound;
 }
 
-int Encoder::getDisOfWheel() const {
-    return PI * WHEEL_DIAMETER * getAbsoluteAngle();
+float Encoder::getDisOfWheel() const {
+    // Serial.println(getAbsoluteAngle());
+    return PI * WHEEL_DIAMETER * getAbsoluteAngle() / 360;
 }
 
 void Encoder::update() {
     // attachInterrupt函数处理
     s_id = id;
-    setupISRHandler(portA, Encoder::ISRHandler, FALLING);
+    int ISR_PortA;
+    if (portA == 2) {
+        ISR_PortA = 0;
+    } else {
+        ISR_PortA = 1;
+    }
+    setupISRHandler(ISR_PortA, Encoder::ISRHandler, FALLING);
+    setupISRHandler(ISR_PortA, Encoder::ISRHandler, RISING);
+
+    // Serial.println(pulseCount);
 
     if (pulseCount <= -COEFFICIENT_PER_ROUND) {
         pulseCount += COEFFICIENT_PER_ROUND;
-        numRound++;
+        numRound--;
     }
     if (pulseCount >= COEFFICIENT_PER_ROUND) {
         pulseCount -= COEFFICIENT_PER_ROUND;
-        numRound--;
+        numRound++;
     }
 }
 
@@ -74,11 +84,50 @@ void Encoder::ISRHandler() {
 
 void Encoder::updateCount() {
     cli();
-    if (digitalRead(portB) == LOW) {
-        pulseCount--;
+    if (digitalRead(portA) == LOW) {    // 下降沿
+        if (digitalRead(portB) == LOW) {
+            pulseCount--;
+        } else {
+            pulseCount++;
+        }
     } else {
-        pulseCount++;
+        if (digitalRead(portB) == LOW) {    // 上升沿
+            pulseCount++;
+        } else {
+            pulseCount--;
+        }
     }
     sei();
 }
 
+void Encoder::testCoefficient() {
+    // attachInterrupt函数处理
+    s_id = id;
+    int ISR_PortA;
+    if (portA == 2) {
+        ISR_PortA = 0;
+    } else {
+        ISR_PortA = 1;
+    }
+    setupISRHandler(ISR_PortA, Encoder::ISRHandler, FALLING);
+    setupISRHandler(ISR_PortA, Encoder::ISRHandler, RISING);
+
+    
+    Serial.begin(9600);
+
+    // Serial.println(ISR_PortA);
+    // Serial.println(portB);
+    
+    while (true) {
+        // Serial.println(digitalRead(portB));
+        Serial.println(getAngle());
+        String cmd = Serial.readString();
+        if (cmd == "STOP") {
+            break;
+        } else if (cmd == "RESET") {
+            pulseCount = 0;
+            Serial.println("reset done");
+        }
+        delay(10);
+    }
+}

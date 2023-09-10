@@ -9,7 +9,7 @@
 #define ENCODER_H
 
 class Encoder {
-private:
+public:
     int numRound;       // 转过圈数
     int pulseCount;     // 脉冲数量
     int portA, portB;   // AB相端口
@@ -30,10 +30,17 @@ public:
     int getRound() const;
 
     // 获取轮子转过距离
-    int getDisOfWheel() const;
+    float getDisOfWheel() const;
 
     // 更新编码器数据
     void update();
+
+    // 测定coefficient的值
+    // 输出pulseCount
+    // 串口输入RESET重置pulseCount
+    // 输入STOP退出
+    // 手动测试多转几圈拟合，得每圈系数
+    void testCoefficient();
 private:
     // 读取B相数据并更新count值，是A相下降沿触发的函数
     void updateCount();
@@ -44,7 +51,7 @@ private:
     static Encoder *_ISRPointer;
     int id;
     static int s_id;
-    static Encoder *objArray[4];
+    static Encoder *objArray[2];
 };
 
 #endif // ENCODER_H

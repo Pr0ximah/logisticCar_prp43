@@ -2,8 +2,14 @@
 #include <Arduino.h>
 #include <math.h>
 
+double Encoder_FL_Coefficient = 799;
+double Encoder_FR_Coefficient = 799;
+
 // 初始化设置
-DriveControl::DriveControl() : encoder_FL(port_Encoder_FL_A, port_Encoder_FL_B, 778) {
+DriveControl::DriveControl() : 
+    encoder_FL(port_Encoder_FL_A, port_Encoder_FL_B, Encoder_FL_Coefficient), 
+    encoder_FR(port_Encoder_FR_A, port_Encoder_FR_B, Encoder_FR_Coefficient)
+{
     // IMU禁用
     // // imu初始化
     // imuInit();
@@ -32,7 +38,26 @@ void DriveControl::setTar(float _x, float _y) {
 
 void DriveControl::gotoPoint(Point p) {
     Vector vecToMove = p - posCur;
-    
+    float disTol = POS_ERROR_TOLERANCE;
+    PID pid(0);
+    pid.setCoefficient(1, 0, 0);
+    // 当误差距离不小于阈值时
+    // 移动控制主循环
+    while (vecToMove.getNorm() >= disTol) {
+        if (vecToMove.getNorm() >= 10) {
+            driveByAngle(100, vecToMove.getAngle());
+        } else {
+            int contrlVal = pid.update(vecToMove.getNorm());
+            driveByAngle(contrlVal, vecToMove.getAngle());
+        }
+        // 更新位置
+        statusUpdate();
+        vecToMove = p - posCur;
+        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+        // Serial.print(posCur.getX());
+        // Serial.print(" ");
+        // Serial.println(posCur.getY());
+    }
 }
 
 void DriveControl::gotoPoint(float x, float y) {
@@ -44,8 +69,24 @@ void DriveControl::gotoTar() {
 }
 
 void DriveControl::statusUpdate() {
-    imuUpdate();
+    // imuUpdate();
     posUpdate();
+}
+
+void DriveControl::posUpdate() {
+    encoder_FL.update();
+    float disWheelFL = encoder_FL.getAngle();
+    encoder_FR.update();
+    float disWheelFR = encoder_FR.getAngle();
+    // Serial.print(posCur.getX());
+    Serial.print(disWheelFL);
+    Serial.print(" ");
+    // Serial.print(posCur.getY());
+    Serial.print(disWheelFR);
+    posCur = Point(disWheelFL - disWheelFR, disWheelFL + disWheelFR);
+    heading = atan2(disWheelFR, disWheelFL) - PI / 4;
+    Serial.print(" ");
+    Serial.println(heading);
 }
 
 // void DriveControl::forward(float controlVal) {
@@ -186,10 +227,10 @@ void DriveControl::rotateByPercentageFL(double percent, motorDir dir) {
     }
     if (sign(percent) == -1) {
         digitalWrite(port_dir_FL, LOW);
-        analogWrite(port_motor_FL, -255 * percent);
+        analogWrite(port_motor_FL, -255 * percent / 100);
     } else {
         digitalWrite(port_dir_FL, HIGH);
-        analogWrite(port_motor_FL, 255 * percent);
+        analogWrite(port_motor_FL, 255 * percent / 100);
     }
 }
 
@@ -202,10 +243,10 @@ void DriveControl::rotateByPercentageFR(double percent, motorDir dir) {
     }
     if (sign(percent) == -1) {
         digitalWrite(port_dir_FR, LOW);
-        analogWrite(port_motor_FR, -255 * percent);
+        analogWrite(port_motor_FR, -255 * percent / 100);
     } else {
         digitalWrite(port_dir_FR, HIGH);
-        analogWrite(port_motor_FR, 255 * percent);
+        analogWrite(port_motor_FR, 255 * percent / 100);
     }
 }
 
@@ -218,10 +259,10 @@ void DriveControl::rotateByPercentageBL(double percent, motorDir dir) {
     }
     if (sign(percent) == -1) {
         digitalWrite(port_dir_BL, LOW);
-        analogWrite(port_motor_BL, -255 * percent);
+        analogWrite(port_motor_BL, -255 * percent / 100);
     } else {
         digitalWrite(port_dir_BL, HIGH);
-        analogWrite(port_motor_BL, 255 * percent);
+        analogWrite(port_motor_BL, 255 * percent / 100);
     }
     
 }
@@ -235,10 +276,10 @@ void DriveControl::rotateByPercentageBR(double percent, motorDir dir) {
     }
     if (sign(percent) == -1) {
         digitalWrite(port_dir_BR, LOW);
-        analogWrite(port_motor_BR, -255 * percent);
+        analogWrite(port_motor_BR, -255 * percent / 100);
     } else {
         digitalWrite(port_dir_BR, HIGH);
-        analogWrite(port_motor_BR, 255 * percent);
+        analogWrite(port_motor_BR, 255 * percent / 100);
     }
     
 }

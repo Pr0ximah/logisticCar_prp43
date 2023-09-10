@@ -16,19 +16,19 @@ const float IR_VOLTAGE = 3.3;
 // 以下参数可以自行设置
 // ===================================================
 // 小车行进状态更新时间间隔(ms)
-const int MOVE_STATUS_UPDATE_TIME_INTERVAL = 500;
+const int MOVE_STATUS_UPDATE_TIME_INTERVAL = 10;
 
 // 小车位移偏差允许的最大值(cm)
 const float POS_ERROR_TOLERANCE = 1;
 
-// IR测距时两次测量之间差距允许的最大值(cm)
-const float IR_DATA_TOLERANCE = 2;
+// // IR测距时两次测量之间差距允许的最大值(cm)
+// const float IR_DATA_TOLERANCE = 2;
 
-// 初始化imu的采样数据数量
-const int IMUINIT_SAMPLE_NUM = 500;
+// // 初始化imu的采样数据数量
+// const int IMUINIT_SAMPLE_NUM = 500;
 
-// 角加速度允许的最大值
-const int ANGLE_ACCE_TOL = 1000;
+// // 角加速度允许的最大值
+// const int ANGLE_ACCE_TOL = 1000;
 
 // PID相关
 // -------------------------
@@ -43,10 +43,10 @@ const float IRange = 50;
 
 // 以下参数需要测试获得
 // ===================================================
-// 角加速度单位换算系数(换算为单位: g)
-const float ANGLE_ACCE_COEFFICIENT = 65.5;
-// 车轮直径(mm)
-const int WHEEL_DIAMETER = 220;
+// // 角加速度单位换算系数(换算为单位: g)
+// const float ANGLE_ACCE_COEFFICIENT = 65.5;
+// 车轮直径(cm)
+const float WHEEL_DIAMETER = 7.38;
 // ===================================================
 
 #endif //CONST_DEF_H

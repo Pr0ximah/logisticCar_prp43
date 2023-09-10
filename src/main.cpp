@@ -22,16 +22,26 @@ void loop() {
 #include <Wire.h>
 #include <I2Cdev.h>
 #include "drive.h"
-#include "encoder.h"
+#include "car.h"
 
 bool firstTime_flag = true;
-Encoder ecd(2, 3, 778);
 
 void setup() {
   Serial.begin(9600);
 }
 
 void loop() {
-  ecd.update();
-  Serial.println(ecd.getAbsoluteAngle());
+  // Serial.println(digitalRead(4));
+  // delay(20);
+  delay(5000);
+  if (firstTime_flag) {
+    Car car;
+    car.drive.gotoPoint(0, 100);
+    firstTime_flag = false;
+  }
+  // if (firstTime_flag) {
+  //   firstTime_flag = false;
+  //   Encoder enc(port_Encoder_FL_A, port_Encoder_FL_B, 799);
+  //   enc.testCoefficient();
+  // }
 }

@@ -32,12 +32,13 @@ private:
     // float disOri[4];   // 原始距离信息[F, B, L, R]，用于初始化修正，修正后建立世界坐标系
     // float disLast[4];  // 上一次采样时的距离信息
     // float disCur[4];   // 本次采样的距离信息
-    Point posCur, posTar;  // 世界坐标系
+    Point posCur, posTar; // 世界坐标系
+    double heading;       // 当前行驶方向
     // MPU6050 imu;  // 陀螺仪初始化
     // IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
     // float angle = 0;   // 小车车头角度
     // float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
-    Encoder encoder_FL;     // 四个轮子的电机编码器
+    Encoder encoder_FL, encoder_FR;     // 左前轮和右后轮的电机编码器
     enum driveDir{dFWD, dLFT, dRHT, dBCK};
     enum motorDir{FWD, BCK};
 public:
