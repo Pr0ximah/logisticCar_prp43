@@ -31,10 +31,13 @@ void setup() {
 }
 
 void loop() {
-  delay(500);
+  delay(1000);
   if (firstTime_flag) {
     Car car;
-    car.drive.driveByAngle(100, PI / 6);
+    // car.drive.rotateByPercentageFL(27, DriveControl::motorDir::FWD);
+    // car.drive.driveByAngle(100, PI / 3);
+    car.drive.gotoPoint(50, 50);
+    car.drive.gotoPoint(0, 0);
     delay(5000);
     car.drive.stop();
     firstTime_flag = false;

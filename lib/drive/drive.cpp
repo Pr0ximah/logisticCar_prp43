@@ -35,28 +35,34 @@ void DriveControl::setTar(float _x, float _y) {
     posTar.setXY(_x, _y);
 }
 
-void DriveControl::gotoPoint(Point p) {
-    Vector vecToMove = p - posCur;
-    float disTol = POS_ERROR_TOLERANCE;
-    PID pid(0);
-    pid.setCoefficient(1, 0, 0);
-    // 当误差距离不小于阈值时
-    // 移动控制主循环
-    while (vecToMove.getNorm() >= disTol) {
-        if (vecToMove.getNorm() >= 10) {
-            driveByAngle(100, vecToMove.getAngle());
-        } else {
-            int contrlVal = pid.update(vecToMove.getNorm());
-            driveByAngle(contrlVal, vecToMove.getAngle());
-        }
-        // 更新位置
-        statusUpdate();
-        vecToMove = p - posCur;
-        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
-        // Serial.print(posCur.getX());
-        // Serial.print(" ");
-        // Serial.println(posCur.getY());
-    }
+// void DriveControl::gotoPoint(Point p) {
+//     Vector vecToMove = p - posCur;
+//     float disTol = POS_ERROR_TOLERANCE;
+//     PID pid(0);
+//     pid.setCoefficient(1, 0, 0);
+//     // 当误差距离不小于阈值时
+//     // 移动控制主循环
+//     while (vecToMove.getNorm() >= disTol) {
+//         if (vecToMove.getNorm() >= 10) {
+//             driveByAngle(100, vecToMove.getAngle());
+//         } else {
+//             int contrlVal = pid.update(vecToMove.getNorm());
+//             driveByAngle(contrlVal, vecToMove.getAngle());
+//         }
+//         // 更新位置
+//         statusUpdate();
+//         vecToMove = p - posCur;
+//         delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+//         // Serial.print(posCur.getX());
+//         // Serial.print(" ");
+//         // Serial.println(posCur.getY());
+//     }
+// }
+
+void DriveControl::gotoPoint(Point(p)) {
+    Vector mvec = p - posCur;
+    moveX(mvec.getX());
+    moveY(mvec.getY());
 }
 
 void DriveControl::gotoPoint(float x, float y) {
@@ -67,23 +73,25 @@ void DriveControl::gotoTar() {
     gotoPoint(posTar);
 }
 
-void DriveControl::statusUpdate() {
-    // imuUpdate();
-    posUpdate();
-}
+// void DriveControl::statusUpdate() {
+//     // imuUpdate();
+//     // posUpdate();
+// }
 
-void DriveControl::posUpdate() {
-    encoders.update();
-    float disWheelFL = encoders.getDisOfWheel(Encoder::L);
-    float disWheelFR = encoders.getDisOfWheel(Encoder::R);
-    Serial.print(posCur.getX());
-    Serial.print(" ");
-    Serial.println(posCur.getY());
-    posCur = Point(disWheelFL - disWheelFR, disWheelFL + disWheelFR);
-    heading = atan2(disWheelFR, disWheelFL) - PI / 4;
-    // Serial.print(" ");
-    // Serial.println(heading);
-}
+// void DriveControl::posUpdate() {
+//     encoders.update();
+//     float disWheelFL = encoders.getDisOfWheel(Encoder::L);
+//     float disWheelFR = encoders.getDisOfWheel(Encoder::R);
+//     Serial.print(posCur.getX());
+//     Serial.print(" ");
+//     Serial.println(posCur.getY());
+    
+//     // heading = atan2(disWheelFR, disWheelFL) - PI / 4;
+//     // Serial.print(" ");
+//     // Serial.println(heading);
+// }
+
+
 
 // void DriveControl::forward(float controlVal) {
 //     // 电机控制
@@ -103,36 +111,35 @@ void DriveControl::posUpdate() {
 //     // -----------------
 // }
 
-void DriveControl::driveByAngle(float speed_percent, float angleTar) {
-    while (angleTar < -PI) {
-        angleTar += PI * 2;
-    }
-    while (angleTar > PI) {
-        angleTar -= PI * 2;
-    }
-    if (0 <= angleTar && angleTar < PI / 2) {
-        rotateByPercentageFR(speed_percent, motorDir::FWD);
-        rotateByPercentageBL(speed_percent, motorDir::FWD);
-        rotateByPercentageFL(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
-        rotateByPercentageBR(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
-        Serial.println(speed_percent * tan(PI / 4 - angleTar));
-    } else if (PI / 2 <= angleTar && angleTar <= PI) {
-        rotateByPercentageFL(speed_percent, motorDir::BCK);
-        rotateByPercentageBR(speed_percent, motorDir::BCK);
-        rotateByPercentageFR(speed_percent * tan(3 * PI / 4 - angleTar), motorDir::FWD);
-        rotateByPercentageBL(speed_percent * tan(3 * PI / 4 - angleTar), motorDir::FWD);
-    } else if (-PI / 2 <= angleTar && angleTar < 0) {
-        rotateByPercentageFL(speed_percent, motorDir::FWD);
-        rotateByPercentageBR(speed_percent, motorDir::FWD);
-        rotateByPercentageFR(speed_percent * tan(-PI / 4 - angleTar), motorDir::FWD);
-        rotateByPercentageBL(speed_percent * tan(-PI / 4 - angleTar), motorDir::FWD);
-    } else if (-PI <= angleTar && angleTar < -PI / 2) {
-        rotateByPercentageFR(speed_percent, motorDir::BCK);
-        rotateByPercentageBL(speed_percent, motorDir::BCK);
-        rotateByPercentageFL(speed_percent * tan(-3 * PI / 4 - angleTar), motorDir::FWD);
-        rotateByPercentageBR(speed_percent * tan(-3 * PI / 4 - angleTar), motorDir::FWD);
-    }
-}
+// void DriveControl::driveByAngle(float speed_percent, float angleTar) {
+//     while (angleTar < -PI) {
+//         angleTar += PI * 2;
+//     }
+//     while (angleTar > PI) {
+//         angleTar -= PI * 2;
+//     }
+//     if (0 <= angleTar && angleTar < PI / 2) {
+//         rotateByPercentageFR(speed_percent, motorDir::FWD);
+//         rotateByPercentageBL(speed_percent, motorDir::FWD);
+//         rotateByPercentageFL(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
+//         rotateByPercentageBR(speed_percent * tan(PI / 4 - angleTar), motorDir::FWD);
+//     } else if (PI / 2 <= angleTar && angleTar <= PI) {
+//         rotateByPercentageFL(speed_percent, motorDir::BCK);
+//         rotateByPercentageBR(speed_percent, motorDir::BCK);
+//         rotateByPercentageFR(speed_percent * tan(3 * PI / 4 - angleTar), motorDir::FWD);
+//         rotateByPercentageBL(speed_percent * tan(3 * PI / 4 - angleTar), motorDir::FWD);
+//     } else if (-PI / 2 <= angleTar && angleTar < 0) {
+//         rotateByPercentageFL(speed_percent, motorDir::FWD);
+//         rotateByPercentageBR(speed_percent, motorDir::FWD);
+//         rotateByPercentageFR(speed_percent * tan(-PI / 4 - angleTar), motorDir::FWD);
+//         rotateByPercentageBL(speed_percent * tan(-PI / 4 - angleTar), motorDir::FWD);
+//     } else if (-PI <= angleTar && angleTar < -PI / 2) {
+//         rotateByPercentageFR(speed_percent, motorDir::BCK);
+//         rotateByPercentageBL(speed_percent, motorDir::BCK);
+//         rotateByPercentageFL(speed_percent * tan(-3 * PI / 4 - angleTar), motorDir::FWD);
+//         rotateByPercentageBR(speed_percent * tan(-3 * PI / 4 - angleTar), motorDir::FWD);
+//     }
+// }
 
 void DriveControl::stop() {
     analogWrite(port_motor_FL, 0);
@@ -278,7 +285,85 @@ void DriveControl::rotateByPercentageBR(double percent, motorDir dir) {
         digitalWrite(port_dir_BR, HIGH);
         analogWrite(port_motor_BR, 255 * percent / 100);
     }
-    
+}
+
+void DriveControl::moveX(float tarX) {
+    float curX = 0;
+    float difX = tarX - curX;
+    float PID_THRESHOLD = 10;
+    PID pid(0);
+    pid.setCoefficient(18, 40, 320, POS_ERROR_TOLERANCE);
+    encoders.reset();
+    while (fabs(difX) >= POS_ERROR_TOLERANCE) {
+        if (fabs(difX) >= PID_THRESHOLD) {     // 全转速
+            driveByDir(sign(difX) * 100, dRHT);
+        } else {                    // PID转速
+            float contrlVal = -pid.update(difX);
+            driveByDir(contrlVal, dRHT);
+        }
+        encoders.update();
+        curX = (encoders.getDisOfWheel(Encoder::L) - encoders.getDisOfWheel(Encoder::R)) / 2;
+        // Serial.println(curX);
+        difX = tarX - curX;
+        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+    }
+    posCur = posCur + Point(curX, 0);
+    Serial.print("X:");
+    Serial.println(posCur.getX());
+}
+
+void DriveControl::moveY(float tarY) {
+    float curY = 0;
+    float difY = tarY - curY;
+    float PID_THRESHOLD = 10;
+    PID pid(0);
+    pid.setCoefficient(18, 40, 380, POS_ERROR_TOLERANCE);
+    encoders.reset();
+    while (fabs(difY) >= POS_ERROR_TOLERANCE) {
+        if (fabs(difY) >= PID_THRESHOLD) {     // 全转速
+            driveByDir(sign(difY) * 100, dFWD);
+        } else {                    // PID转速
+            float contrlVal = -pid.update(difY);
+            driveByDir(contrlVal, dFWD);
+        }
+        encoders.update();
+        curY = (encoders.getDisOfWheel(Encoder::L) + encoders.getDisOfWheel(Encoder::R)) / 2;
+        // Serial.println(curY);
+        difY = tarY - curY;
+        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+    }
+    posCur = posCur + Point(0, curY);
+    Serial.print("Y:");
+    Serial.println(posCur.getY());
+}
+
+void DriveControl::driveByDir(float speed_percent, driveDir dir) {
+    switch (dir) {
+        case dFWD:
+            rotateByPercentageFL(speed_percent, FWD);
+            rotateByPercentageFR(speed_percent, FWD);
+            rotateByPercentageBL(speed_percent, FWD);
+            rotateByPercentageBR(speed_percent, FWD);
+            break;
+        case dBCK:
+            rotateByPercentageFL(speed_percent, BCK);
+            rotateByPercentageFR(speed_percent, BCK);
+            rotateByPercentageBL(speed_percent, BCK);
+            rotateByPercentageBR(speed_percent, BCK);
+            break;
+        case dLFT:
+            rotateByPercentageFL(speed_percent, BCK);
+            rotateByPercentageFR(speed_percent, FWD);
+            rotateByPercentageBL(speed_percent, FWD);
+            rotateByPercentageBR(speed_percent, BCK);
+            break;
+        case dRHT:
+            rotateByPercentageFL(speed_percent, FWD);
+            rotateByPercentageFR(speed_percent, BCK);
+            rotateByPercentageBL(speed_percent, BCK);
+            rotateByPercentageBR(speed_percent, FWD);
+            break;
+    }
 }
 
 // 红外模块已禁用

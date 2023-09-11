@@ -18,6 +18,7 @@ public:
     float kp, ki, kd;
     float target;
     float outVal;
+    float errorTol;
     int secStable;
     int secNow, secLast;
 
@@ -27,7 +28,7 @@ public:
     // 更新PID参数值，输入当前值，返回控制量
     float update(float current);
 
-    void setCoefficient(float _kp, float _ki, float _kd);
+    void setCoefficient(float _kp, float _ki, float _kd, float _error_tol);
 };
 
 // 返回x的符号值，正返回1，负返回-1

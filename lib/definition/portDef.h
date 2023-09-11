@@ -9,11 +9,11 @@
 #define PORT_DEF_H
 
 // 电机端口
-const int port_motor_FL = 7;  // 左前电机PWM
+const int port_motor_FL = 9;  // 左前电机PWM
 const int port_motor_FR = 10;  // 右前电机PWM
 const int port_motor_BL = 6;  // 左后电机PWM
 const int port_motor_BR = 11;  // 右后电机PWM
-const int port_dir_FL = 9;    // 左前电机方向
+const int port_dir_FL = 7;    // 左前电机方向
 const int port_dir_FR = 12;    // 右前电机方向
 const int port_dir_BL = 8;    // 左后电机方向
 const int port_dir_BR = 13;    // 右后电机方向
