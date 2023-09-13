@@ -21,6 +21,10 @@ Encoder::Encoder(int _portA_L, int _portB_L, int _portA_R, int _portB_R, int _co
     pulseCountR = 0;
     numRoundL = 0;
     numRoundR = 0;
+    // angleVel[3];
+    angleLast = 0;
+    angleCur = 0;
+    countOfUpdate = 0;
 
     // 引脚模式设置
     pinMode(portA_L, INPUT);
@@ -36,6 +40,12 @@ void Encoder::reset() {
     pulseCountR = 0;
     numRoundL = 0;
     numRoundR = 0;
+    countOfUpdate = 0;
+    for (int i = 0; i < 3; i++) {
+        angleVel[i] = 0;
+    }
+    angleLast = 0;
+    angleCur = 0;
 }
 
 float Encoder::getAngle(Encoder::side side) const {
@@ -103,6 +113,40 @@ void Encoder::update() {
     if (pulseCountR >= COEFFICIENT_PER_ROUND_R) {
         pulseCountR -= COEFFICIENT_PER_ROUND_R;
         numRoundR++;
+    }
+    countOfUpdate++;
+
+    if (countOfUpdate % 3 == 0) {
+        timeCur = millis();
+        angleCur = getAbsoluteAngle(Encoder::R);
+        if (firstTimeFlag) {
+            timeLast = timeCur;
+            angleLast = angleCur;
+            firstTimeFlag = false;
+            return;
+        } else {
+            int timeInterval = timeCur - timeLast;
+            // Serial.println(timeInterval);
+            double angleDiff = angleCur - angleLast;
+            double angleVelTemp;
+            // Serial.println(angleDiff);
+            if (timeInterval != 0) {
+                angleVelTemp = angleDiff * 1000 / timeInterval;
+                // Serial.println(angleVelTemp);
+            } else {
+                angleVelTemp = 0;
+            }
+            // if (fabs(angleDiff - (angleVel[1] - angleVel[0])) <= 20) {
+            //     angleVel[0] = angleVel[1];
+            //     angleVel[1] = angleVel[2];
+            //     angleVel[2] = angleVelTemp;
+            // }
+            angleVel[0] = angleVel[1];
+            angleVel[1] = angleVel[2];
+            angleVel[2] = angleVelTemp;
+            timeLast = timeCur;
+            angleLast = angleCur;
+        }
     }
 }
 
@@ -187,4 +231,20 @@ void Encoder::testCoefficient(Encoder::side side) {
         }
         delay(10);
     }
+}
+
+double Encoder::getAngleVel() const {
+    double sum = 0;
+    int num = 0;
+    for (int i = 0; i < 3; i++) {
+        if (angleVel[i] != 0) {
+            sum += angleVel[i];
+            num++;
+        }
+    }
+    if (num == 0) {
+        num = 1;
+    }
+    // Serial.println(sum / num);
+    return sum / num;
 }

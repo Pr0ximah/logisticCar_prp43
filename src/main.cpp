@@ -36,10 +36,12 @@ void loop() {
     Car car;
     // car.drive.rotateByPercentageFL(27, DriveControl::motorDir::FWD);
     // car.drive.driveByAngle(100, PI / 3);
-    car.drive.gotoPoint(50, 50);
-    car.drive.gotoPoint(0, 0);
-    delay(5000);
-    car.drive.stop();
+    // car.drive.gotoPoint(50, 50);
+    // car.drive.gotoPoint(0, 0);
+    // delay(5000);
+    // car.drive.stop();
+    car.drive.motorPIDTest();
+    // car.drive.motorVoltVelTest();
     firstTime_flag = false;
   }
   // if (firstTime_flag) {

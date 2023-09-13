@@ -14,7 +14,7 @@ float PID::update(float current) {
     }
     errorDiff = errorNow - errorLast;
     D = kd * errorDiff;
-    if (fabs(P) >= IRange) {
+    if (fabs(P) >= IRangeLocal) {
         errorInt = 0;
     } else {
         errorInt += errorNow;
@@ -22,9 +22,9 @@ float PID::update(float current) {
             errorInt = sign(errorInt) * IMax / ki;
         }
     }
-    if (sign(errorInt) != sign(errorNow) || fabs(errorNow) <= errorTol) {
-        errorInt = 0;
-    }
+    // if (sign(errorInt) != sign(errorNow) || fabs(errorNow) <= errorTol) {
+    //     errorInt = 0;
+    // }
     I = ki * errorInt;
     if (fabs(errorNow) <= errorTol) {
         if (secStable >= 5) {
@@ -55,9 +55,15 @@ void PID::setCoefficient(float _kp, float _ki, float _kd, float _error_tol) {
     errorTol = _error_tol;
 }
 
-PID::PID(float _target): target(_target), init_Flag(true) {}
+PID::PID(float _target): target(_target), init_Flag(true) {
+    IRangeLocal = IRange;
+}
 
 int sign(float x) {
     if (x == 0) { return 0; }
     return (x > 0) ? 1 : -1;
+}
+
+void PID::setIRange(int _IRange) {
+    IRangeLocal = _IRange;
 }

@@ -21,6 +21,7 @@ public:
     float errorTol;
     int secStable;
     int secNow, secLast;
+    int IRangeLocal;
 
     // functions
     PID(float _target);
@@ -29,6 +30,8 @@ public:
     float update(float current);
 
     void setCoefficient(float _kp, float _ki, float _kd, float _error_tol);
+
+    void setIRange(int IRange);
 };
 
 // 返回x的符号值，正返回1，负返回-1

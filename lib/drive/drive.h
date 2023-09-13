@@ -94,7 +94,15 @@ private:
     // // 读取陀螺仪当前读取到的角加速度值
     // float imuReadAngleAcce();
 
+public:
+    // 电机PID测试函数
+    void motorPIDTest();
 
+    // 电机电压percent转速映射自动测试函数
+    void motorVoltVelTest();
+
+    // 电机转速到电压percent映射函数
+    double motorVel2VoltPercent(double vel);
 };
 
 #endif //DRIVE_H

@@ -366,6 +366,81 @@ void DriveControl::driveByDir(float speed_percent, driveDir dir) {
     }
 }
 
+void DriveControl::motorPIDTest() {
+    int velPercentTar = -30;
+    float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
+    PID pid(velTar);
+    pid.setIRange(50);
+    pid.setCoefficient(0.17, 0.006, 0.3, 1);
+    encoders.reset();
+    while (true) {
+        encoders.update();
+        double vel = encoders.getAngleVel();
+        double controlVal;
+        if (velPercentTar <= 50) {
+            if (fabs(vel - velTar) <= 50) {
+                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
+            } else if (fabs(vel) < fabs(velTar)) {
+                controlVal = motorVel2VoltPercent(velTar);
+                if (fabs(controlVal) < 30) {controlVal = sign(controlVal) * 30;}
+            } else {
+                controlVal = (fabs(motorVel2VoltPercent(velTar)) - 5) * sign(motorVel2VoltPercent(velTar));
+            }
+        } else {
+            if (fabs(vel - velTar) <= 1000) {
+                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
+            } else {
+                controlVal = sign(velTar) * 70;
+            }
+        }
+        Serial.println(String(vel) + " | " + String(controlVal) + " | " + String(velTar) + " | " + String(motorVel2VoltPercent(velTar)));
+        if (sign(controlVal) != sign(velTar)) {
+            controlVal = 0;
+        }
+        rotateByPercentageFR(controlVal, FWD);
+        rotateByPercentageFL(70, FWD);
+        rotateByPercentageBR(70, FWD);
+        rotateByPercentageBL(controlVal, FWD);
+        delay(10);
+    }
+}
+
+void DriveControl::motorVoltVelTest() {
+    for (int volt = 0; volt <= 100; volt += 5) {
+        rotateByPercentageFR(volt, FWD);
+        delay(5000);
+        int numSample = 0;
+        float sample[10];
+        for (int i = 0; i < 10; i++) {
+            sample[i] = 0;
+        }
+        int temp = 0;
+        while (numSample < 10) {
+            encoders.update();
+            temp++;
+            if (temp % 50 == 0) {
+                sample[numSample] = encoders.getAngleVel();
+                numSample++;
+            }
+            delay(10);
+        }
+        float sum = 0;
+        for (int i = 0; i < 10; i++) {
+            sum += sample[i];
+        }
+        String str = String(volt) + " : " + String(sum / 10);
+        Serial.println(str);
+    }
+    rotateByPercentageFR(0, FWD);
+}
+
+double DriveControl::motorVel2VoltPercent(double _vel) {
+    double vel = fabs(_vel);
+    return (0.0003 * pow(vel, 2) - 0.1494 * vel + 37.8040) * (sign(_vel));
+}
+
+
+
 // 红外模块已禁用
 // ------------
 // void DriveControl::posInit() {

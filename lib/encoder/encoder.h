@@ -16,6 +16,11 @@ private:
     int portA_L, portB_L, portA_R, portB_R;   // AB相端口
     int ISR_PortL, ISR_PortR;       // attachinterrupt函数调用端口值
     const int COEFFICIENT_PER_ROUND_L, COEFFICIENT_PER_ROUND_R;    // 脉冲数-圈数映射系数
+    double angleVel[3] = {0, 0, 0};   // 角速度测量值(deg)
+    bool firstTimeFlag = true;
+    unsigned long timeLast, timeCur;
+    double angleLast, angleCur;
+    int countOfUpdate;  // 记录更新次数，每5次更新一次电机转速
 public:
     enum side {L, R};   // 左右边选择
 
@@ -24,7 +29,7 @@ public:
     // 重置编码器读数
     void reset();
 
-    // 获取编码器转过角度 [0, 360)
+    // 获取编码器转过角度 [0, 360deg)
     float getAngle(Encoder::side side) const;
 
     // 获取编码器转过绝对角度 (-inf, inf)
@@ -45,6 +50,8 @@ public:
     // 输入STOP退出
     // 手动测试多转几圈拟合，得每圈系数
     void testCoefficient(Encoder::side side);
+
+    double getAngleVel() const;
 private:
     // 读取B相数据并更新count值，是A相下降沿触发的函数
     void updateCountL();

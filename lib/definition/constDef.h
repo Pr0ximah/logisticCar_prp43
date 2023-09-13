@@ -45,6 +45,8 @@ const float IRange = 50;
 // const float ANGLE_ACCE_COEFFICIENT = 65.5;
 // 车轮直径(cm)
 const float WHEEL_DIAMETER = 7.38;
+// 电机满电压转速
+const float MOTOR_MAX_SPEED = 845;
 // ===================================================
 
 #endif //CONST_DEF_H
