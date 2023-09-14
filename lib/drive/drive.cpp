@@ -565,5 +565,22 @@ void DriveControl::move(float speed,Vector vec){
 }
 
 void DriveControl::rotate(float speed,float theta){
-
+    encoders.encoderFL.reset();
+    encoders.encoderFR.reset();
+    double k=1;
+    double v_1,v_2,v_3,v_4;//1-左前,2-右前,3-左后,4-右后 左前和左后一致 右前和右后一致
+    v_1=-speed;
+    v_4=speed;
+    v_2=speed;
+    v_3=-speed;
+    if(theta<0){
+    v_1=speed;
+    v_4=-speed;
+    v_2=-speed;
+    v_3=speed;
+    }
+    if(fabs(v_1)>100 || fabs(v_2)>100){
+        k=(fabs(v_1)>fabs(v_2))? 100/v_1 :100/v_2;
+    }
+    
 }
