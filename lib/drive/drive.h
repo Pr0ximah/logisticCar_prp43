@@ -34,12 +34,13 @@ private:
     // float disLast[4];  // 上一次采样时的距离信息
     // float disCur[4];   // 本次采样的距离信息
     Point posCur, posTar; // 世界坐标系
+    float motorSpeed[4];  // 电机转速(percent)
     // double heading;       // 当前行驶方向
     // MPU6050 imu;  // 陀螺仪初始化
     // IR IRArray[4] = {IR(port_IR_F, IR_VOLTAGE), IR(port_IR_B, IR_VOLTAGE), IR(port_IR_L, IR_VOLTAGE), IR(port_IR_R, IR_VOLTAGE)};  // 红外传感器初始化
     // float angle = 0;   // 小车车头角度
     // float angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
-    Encoder encoders;     // 左前轮和右后轮的电机编码器
+    EncoderSet encoders;     // 电机编码器集合
     enum driveDir{dFWD, dLFT, dRHT, dBCK};
 public:
     DriveControl();
@@ -93,6 +94,9 @@ private:
 
     // // 读取陀螺仪当前读取到的角加速度值
     // float imuReadAngleAcce();
+
+    // 电机转速PID控制线程函数
+    void motorSpeedUpdate();
 
 public:
     // 电机PID测试函数

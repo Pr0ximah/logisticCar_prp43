@@ -47,6 +47,9 @@ const float IRange = 50;
 const float WHEEL_DIAMETER = 7.38;
 // 电机满电压转速
 const float MOTOR_MAX_SPEED = 845;
+// 编码器pulseCount与圈数映射系数
+const double Encoder_FL_Coefficient = 1595.6;
+const double Encoder_FR_Coefficient = 1599.6;
 // ===================================================
 
 #endif //CONST_DEF_H
