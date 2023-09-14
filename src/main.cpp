@@ -40,7 +40,8 @@ void loop() {
     // car.drive.gotoPoint(0, 0);
     // delay(5000);
     // car.drive.stop();
-    car.drive.motorPIDTest();
+
+    car.drive.move(60,Vector(1,1.732));
     // car.drive.motorVoltVelTest();
     firstTime_flag = false;
   }

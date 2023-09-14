@@ -63,10 +63,11 @@ void DriveControl::gotoPoint(float x, float y) { gotoPoint(Point(x, y)); }
 
 void DriveControl::gotoTar() { gotoPoint(posTar); }
 
-// void DriveControl::statusUpdate() {
-//     // imuUpdate();
-//     // posUpdate();
-// }
+void DriveControl::statusUpdate() {
+    // imuUpdate();
+    // posUpdate();
+    motorSpeedUpdate();
+}
 
 // void DriveControl::posUpdate() {
 //     encoders.update();
@@ -134,10 +135,9 @@ void DriveControl::gotoTar() { gotoPoint(posTar); }
 // }
 
 void DriveControl::stop() {
-    analogWrite(port_motor_FL, 0);
-    analogWrite(port_motor_FR, 0);
-    analogWrite(port_motor_BL, 0);
-    analogWrite(port_motor_BR, 0);
+    for (int i = 0; i < 4; i++) {
+        motorSpeed[i] = 0;
+    }
 }
 
 // float DriveControl::imuUpdate() {
@@ -360,51 +360,51 @@ void DriveControl::driveByDir(float speed_percent, driveDir dir) {
 }
 
 void DriveControl::motorSpeedUpdate() {
-    Encoder *eTemp[2] = {&encoders.encoderFL, &encoders.encoderFR};
+    Encoder *eTemp[4] = {&encoders.encoderFL, &encoders.encoderFR, &encoders.encoderFR, &encoders.encoderFL};
     void (DriveControl::*rotateFunc[4])(double, DriveControl::motorDir) = {
         &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL,
         &rotateByPercentageBR};
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
         float velPercentTar = motorSpeed[i];
+        if (velPercentTar == 0) {
+            (this->*rotateFunc[i])(0, FWD);
+        }
         float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
         PID pid(velTar);
         pid.setCoefficient(0.17, 0.006, 0.3, 0);
         eTemp[i]->reset();
-        while (true) {
-            eTemp[i]->update();
-            double vel = eTemp[i]->getAngleVel();
-            if (i % 2) {  // i为奇数，即右侧电机，编码器安装方向相反，需要取负
-                vel = -vel;
-            }
-            double controlVal;
-            if (velPercentTar <= 50) {
-                if (fabs(vel - velTar) <= 50) {
-                    controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-                } else if (fabs(vel) < fabs(velTar)) {
-                    controlVal = motorVel2VoltPercent(velTar);
-                    if (fabs(controlVal) < 30) {
-                        controlVal = sign(controlVal) * 30;
-                    }
-                } else {
-                    controlVal = (fabs(motorVel2VoltPercent(velTar)) - 5) *
-                                 sign(motorVel2VoltPercent(velTar));
+        eTemp[i]->update();
+        double vel = eTemp[i]->getAngleVel();
+        if (i % 2) {  // i为奇数，即右侧电机，编码器安装方向相反，需要取负
+            vel = -vel;
+        }
+        double controlVal;
+        if (velPercentTar <= 50) {
+            if (fabs(vel - velTar) <= 50) {
+                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
+            } else if (fabs(vel) < fabs(velTar)) {
+                controlVal = motorVel2VoltPercent(velTar);
+                if (fabs(controlVal) < 30) {
+                    controlVal = sign(controlVal) * 30;
                 }
             } else {
-                if (fabs(vel - velTar) <= 1000) {
-                    controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-                } else {
-                    controlVal = sign(velTar) * 70;
-                }
+                controlVal = (fabs(motorVel2VoltPercent(velTar)) - 5) *
+                                sign(motorVel2VoltPercent(velTar));
             }
-            // Serial.println(String(vel) + " | " + String(controlVal) + " | " +
-            //                String(velTar) + " | " +
-            //                String(motorVel2VoltPercent(velTar)));
-            if (sign(controlVal) != sign(velTar)) {
-                controlVal = 0;
+        } else {
+            if (fabs(vel - velTar) <= 1000) {
+                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
+            } else {
+                controlVal = sign(velTar) * 70;
             }
-            (this->*rotateFunc[i])(controlVal, FWD);
-            delay(10);
         }
+        // Serial.println(String(vel) + " | " + String(controlVal) + " | " +
+        //                String(velTar) + " | " +
+        //                String(motorVel2VoltPercent(velTar)));
+        if (sign(controlVal) != sign(velTar)) {
+            controlVal = 0;
+        }
+        (this->*rotateFunc[i])(controlVal, FWD);
     }
 }
 
@@ -532,3 +532,38 @@ double DriveControl::motorVel2VoltPercent(double _vel) {
 //     &temp4, &temp5, &angleAcceOri); //获取三轴加速度和三轴角速度初始值 return
 //     angleAcceOri / ANGLE_ACCE_COEFFICIENT - angleAcce0_bias;
 // }
+//     int16_t temp1, temp2, temp3, temp4, temp5;  // 不使用这些变量，仅用于imu函数传参
+//     imu.getMotion6(&temp1, &temp2, &temp3, &temp4, &temp5, &angleAcceOri); //获取三轴加速度和三轴角速度初始值
+//     return angleAcceOri / ANGLE_ACCE_COEFFICIENT - angleAcce0_bias;
+// }
+void DriveControl::move(float speed,Vector vec){
+    float trans_Angle=vec.getAngle()+PI/4;
+    double k=1;
+    double v_1,v_2,v_3,v_4;//1-左前,2-右前,3-左后,4-右后 左前和右后一直保持一致 右前和左后一直保持一致
+    v_1=speed*cos(trans_Angle);
+    v_4=speed*cos(trans_Angle);
+    v_2=speed*sin(trans_Angle);
+    v_3=speed*sin(trans_Angle);
+
+    if(fabs(v_1)>100 || fabs(v_2)>100){
+        k=(fabs(v_1)>fabs(v_2))? 100/v_1 :100/v_2;
+    }
+    motorSpeed[0] = v_1*k;
+    motorSpeed[1] = v_2*k;
+    motorSpeed[2] = v_3*k;
+    motorSpeed[3] = v_4*k;
+    String str;
+    for (int i = 0; i < 4; i++) {
+        str += motorSpeed[i];
+        str += " | ";
+    }
+    Serial.println(str);
+    while (true) {
+        statusUpdate();
+        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+    }
+}
+
+void DriveControl::rotate(float speed,float theta){
+
+}

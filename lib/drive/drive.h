@@ -75,7 +75,7 @@ public:
 
     // 用方向控制前进
     void driveByDir(float speed_percent, driveDir dir);
-
+    
     // 四轮电机驱动的百分制控制
     void rotateByPercentageFL(double percent, motorDir dir);
     void rotateByPercentageFR(double percent, motorDir dir);
@@ -85,6 +85,9 @@ public:
     // 控制小车沿x轴或y轴走直线
     void moveX(float tarX);
     void moveY(float tarY);
+    //控制小车move和rotate
+    void move(float speed, Vector dir);
+    void rotate(float speed,float theta);
 private:
     // // 更新陀螺仪数据
     // float imuUpdate();
@@ -108,5 +111,7 @@ public:
     // 电机转速到电压percent映射函数
     double motorVel2VoltPercent(double vel);
 };
+
+
 
 #endif //DRIVE_H
