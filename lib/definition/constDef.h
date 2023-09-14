@@ -8,11 +8,6 @@
 #ifndef CONST_DEF_H
 #define CONST_DEF_H
 
-// 以下参数根据线路决定
-// ===================================================
-const float IR_VOLTAGE = 3.3;
-// ===================================================
-
 // 以下参数可以自行设置
 // ===================================================
 // 小车行进状态更新时间间隔(ms)
@@ -21,8 +16,8 @@ const int MOVE_STATUS_UPDATE_TIME_INTERVAL = 10;
 // 小车位移偏差允许的最大值(cm)
 const float POS_ERROR_TOLERANCE = 0.01;
 
-// 小车旋转角度允许的最大值(rad)
-const float ANGLE_ERROR_TOLERANCE = 0.1;
+// 小车旋转角度允许的最大值(deg)
+const double ANGLE_ERROR_TOLERANCE = 0.5;
 
 // // 初始化imu的采样数据数量
 // const int IMUINIT_SAMPLE_NUM = 500;
@@ -46,16 +41,16 @@ const float IRange = 50;
 // 电机满电压转速
 const float MOTOR_MAX_SPEED = 845;
 // 编码器pulseCount与圈数映射系数
-const double Encoder_FL_Coefficient = 1595.6;
+const double Encoder_FL_Coefficient = 1597.2;
 const double Encoder_FR_Coefficient = 1599.6;
 // ===================================================
 
 // 以下参数需要测量获得
 // ===================================================
 // 车轮直径(cm)
-const float WHEEL_DIAMETER = 7.38;
+const float WHEEL_DIAMETER = 7.5;
 // 车轮中心到旋转中心(cm)
-const float DIS_WHEEL_TO_CENTER = 15;
+const float DIS_WHEEL_TO_CENTER = 25.6;
 // ===================================================
 
 #endif  // CONST_DEF_H

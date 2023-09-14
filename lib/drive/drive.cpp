@@ -86,6 +86,7 @@ void DriveControl::stop() {
     for (int i = 0; i < 4; i++) {
         motorSpeed[i] = 0;
     }
+    motorSpeedUpdate();
 }
 
 void DriveControl::posUpdate() {
@@ -170,8 +171,9 @@ void DriveControl::motorSpeedUpdate() {
         &rotateByPercentageBR};
     for (int i = 0; i < 4; i++) {
         float velPercentTar = motorSpeed[i];
-        if (velPercentTar == 0) {
+        if (fabs(velPercentTar) <= 0.02) {
             (this->*rotateFunc[i])(0, FWD);
+            continue;
         }
         float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
         PID pid(velTar);
@@ -312,16 +314,11 @@ void DriveControl::move(float speed, Vector vec) {
         vecToMove = pTar - posCur;
         delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
     }
+    stop();
+    delay(500);
 }
 
 void DriveControl::rotate(float speed, float angleTar) {
-    // 目标角度归一化到[0, 2*pi)
-    while (angleTar >= 2 * PI) {
-        angleTar -= 2 * PI;
-    }
-    while (angleTar < 0) {
-        angleTar += 2 * PI;
-    }
     // 编码器(定位用)初始化
     encoders.encoderFL.reset();
     encoders.encoderFR.reset();
@@ -330,19 +327,21 @@ void DriveControl::rotate(float speed, float angleTar) {
 
     double angleToRotate = angleTar - angleCur;
     float angleTol = ANGLE_ERROR_TOLERANCE;
+    Serial.println(angleTar);
     PID pid(angleTar);
-    pid.setCoefficient(1, 0, 0, ANGLE_ERROR_TOLERANCE);
+    pid.setCoefficient(1, 0, 0, 0);
     // 当误差距离不小于阈值时
     // 旋转控制主循环
-    while (angleToRotate >= angleTol) {
-        if (angleToRotate >= 10) {
-            rotateByDir(speed, false);
+    while (fabs(angleToRotate) >= angleTol) {
+        bool clockwise = (angleTar < 0);
+        if (fabs(angleToRotate) >= 10) {
+            rotateByDir(speed, clockwise);
         } else {
             int controlVal = pid.update(angleCur);
             if (controlVal >= 20) {
                 controlVal = 20;
             }
-            rotateByDir(controlVal, false);
+            rotateByDir(controlVal, clockwise);
         }
         // 更新电机速度
         motorSpeedUpdate();
@@ -351,12 +350,14 @@ void DriveControl::rotate(float speed, float angleTar) {
                              -encoders.encoderFR.getDisOfWheel(),
                              encoders.encoderFR.getDisOfWheel(),
                              -encoders.encoderFL.getDisOfWheel()};
-        angleCur +=
-            -(disWheel[0] + disWheel[1] + disWheel[2] + disWheel[3]) / 4;
+        angleCur = (-disWheel[0] + disWheel[1] - disWheel[2] + disWheel[3]) * 180 / (4 * PI * DIS_WHEEL_TO_CENTER);
 
         angleToRotate = angleTar - angleCur;
+        Serial.println(angleCur);
         delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
     }
+    stop();
+    delay(500);
 }
 
 // IMU已禁用

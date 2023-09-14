@@ -28,7 +28,9 @@ void loop() {
     delay(1000);
     if (firstTime_flag) {
         Car car;
-        car.drive.move(40, Point(0, 50));
+        car.drive.move(60, Vector(0, 20));
+        car.drive.rotate(60, 90);
+        car.drive.move(100, Vector(50, 50));
         firstTime_flag = false;
     }
 }

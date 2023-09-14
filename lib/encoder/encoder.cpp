@@ -144,6 +144,7 @@ void Encoder::testCoefficient() {
             pulseCount = 0;
             Serial.println("reset done");
         }
+        Serial.println(pulseCount);
         delay(10);
     }
 }
