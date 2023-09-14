@@ -12,27 +12,23 @@ void loop() {
 }
 */
 
-
 /**
  * @Pr0ximah
- * @date 23.06.25
- * @brief debug模式测试代码1
-*/
+ * @date 23.09.04
+ * @brief debug模式测试代码
+ */
 #include <Arduino.h>
-#include <Wire.h>
-#include <I2Cdev.h>
-#include "drive.h"
+#include "car.h"
 
 bool firstTime_flag = true;
 
-void setup() {
-  
-}
+void setup() { Serial.begin(9600); }
 
 void loop() {
-  if (firstTime_flag) {
-    DriveControl testModule;
-    firstTime_flag = false;
-    testModule.gotoPoint(0, 20);
-  }
+    delay(1000);
+    if (firstTime_flag) {
+        Car car;
+        car.drive.move(40, Point(0, 50));
+        firstTime_flag = false;
+    }
 }

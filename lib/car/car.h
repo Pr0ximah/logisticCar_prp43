@@ -4,7 +4,7 @@
  * @file car.h
  * @attention 小车控制集成
  * @brief 实现Car类，控制小车的所有行动
-*/
+ */
 
 #ifndef CAR_H
 #define CAR_H
@@ -12,10 +12,9 @@
 #include "drive.h"
 
 class Car {
-private:
-    
-public:
+   private:
+   public:
     DriveControl drive;  // 应该放private！做测试时写到public里
 };
 
-#endif //CAR_H
+#endif  // CAR_H
