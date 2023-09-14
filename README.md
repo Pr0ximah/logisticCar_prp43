@@ -26,3 +26,9 @@
 |                                                                       <br>
 |--src                                                                  <br>
 |  |--main.cpp       程序主函数，主入口。
+
+# Maintainer
+
+@Pr0ximah: https://github.com/Pr0ximah
+
+@520AWEI: https://github.com/520AWEI
