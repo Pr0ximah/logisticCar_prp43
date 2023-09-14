@@ -4,13 +4,13 @@
  * @file PID.h
  * @brief 实现PID类，提供PID控制，并实现自动参数整定
  * @todo 参数自整定部分
-*/
+ */
 
 #ifndef PID_H
 #define PID_H
 
 class PID {
-public:
+   public:
     // variables
     float errorNow, errorLast, errorDiff, errorInt;
     bool init_Flag;
@@ -37,4 +37,4 @@ public:
 // 返回x的符号值，正返回1，负返回-1
 int sign(float x);
 
-#endif //PID_H
+#endif  // PID_H

@@ -1,19 +1,16 @@
 #include "point.h"
+
 #include <math.h>
 
-Point::Point(): x(0), y(0) {}
+Point::Point() : x(0), y(0) {}
 
-Point::Point(float _x, float _y): x(_x), y(_y) {}
+Point::Point(float _x, float _y) : x(_x), y(_y) {}
 
-Point::Point(const Point &pt): x(pt.x), y(pt.y) {}
+Point::Point(const Point &pt) : x(pt.x), y(pt.y) {}
 
-float Point::getX() const {
-    return x;
-}
+float Point::getX() const { return x; }
 
-float Point::getY() const {
-    return y;
-}
+float Point::getY() const { return y; }
 
 void Point::setXY(float _x, float _y) {
     x = _x;
@@ -35,13 +32,9 @@ Point &Point::operator=(const Point &pt) {
     return *this;
 }
 
-Point Point::operator+(const Point &pt) {
-    return Point(x + pt.x, y + pt.y);
-}
+Point Point::operator+(const Point &pt) { return Point(x + pt.x, y + pt.y); }
 
-Vector Point::operator-(const Point &pt) {
-    return Vector(x - pt.x, y - pt.y);
-}
+Vector Point::operator-(const Point &pt) { return Vector(x - pt.x, y - pt.y); }
 
 Vector::Vector() {
     x = 0;
@@ -58,27 +51,21 @@ Vector::Vector(const Point &pt) {
     y = pt.getY();
 }
 
-float Vector::getX() const {
-    return x;
-}
+float Vector::getX() const { return x; }
 
-float Vector::getY() const {
-    return y;
-}
+float Vector::getY() const { return y; }
 
 void Vector::setXY(float _x, float _y) {
     x = _x;
     y = _y;
 }
 
-float Vector::getNorm() const {
-    return sqrt(x * x + y * y);
-}
+float Vector::getNorm() const { return sqrt(x * x + y * y); }
 
 Point Point::operator+(const Vector &vec) {
     return Point(x + vec.getX(), y + vec.getY());
 }
 
-float Vector::getAngle() const {
-    return atan2(-x, y);
-}
+float Vector::getAngle() const { return atan2(-x, y); }
+
+Vector Vector::operator*(int k) { return Vector(this->x * k, this->y * k); }
