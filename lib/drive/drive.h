@@ -26,22 +26,62 @@
 
 // 封装的移动控制，可以设置目标点，小车移动到对应位置
 class DriveControl {
-   private:
-    Point posCur, posTar;  // 世界坐标系
-    float motorSpeed[4];   // 电机转速(percent)
-    // double heading;       // 当前行驶方向
-    // MPU6050 imu;  // 陀螺仪初始化
-    // angleAcce0_bias;  // 陀螺仪角加速度值调0偏置
+public:
+    //    private:
+    Point posCur;         // 世界坐标系
+    float motorSpeed[4];  // 电机转速(percent)
+    double motorControlVal[4];// 电机控制量
+    // double heading;        // 当前行驶方向
+    // MPU6050 imu;           // 陀螺仪初始化
+    // angleAcce0_bias;       // 陀螺仪角加速度值调0偏置
     EncoderSet encoders;  // 电机编码器集合
 
-   public:
+    struct incPID  // 不退出的增量式PID
+    {
+        float kp, ki, kd, uTol = 50;
+        float error[3] = {0, 0, 0};
+        float u = 0;
+        float tar;
+
+        float update(float input) {
+            error[0] = error[1];
+            error[1] = error[2];
+            error[2] = tar - input;
+            double ki_temp = ki;  // 误差稳定后加ki
+            double kd_temp = kd;  // 误差有效时再加kd
+            if (fabs(error[2] - error[1]) > 5) {
+                ki_temp = 0;
+            }
+            if (error[0] == 0) {
+                kd_temp = 0;
+            }
+            u = kp * (error[2] - error[1]) / 10 + ki_temp * (error[2]) / 10 +
+                kd_temp * (error[2] - 2 * error[1] + error[0]) / 10;
+            Serial.print("error: " + String(error[2]) + " _ " + "u: " + String(u));
+            return u;
+        }
+
+        void setCoefficient(float _kp, float _ki, float _kd, float _uTol = 50) {
+            kp = _kp;
+            ki = _ki;
+            kd = _kd;
+            uTol = _uTol;
+        }
+
+        void setTar(float _tar) { tar = _tar; }
+    } motorPid[4];
+
+public:
     DriveControl();
-    void setTar(Point p);
-    void setTar(float x, float y);
+
+    // 最顶层的移动控制，依赖定位实现
+    // ------------------------------
+    // 移动到目标点
     void gotoPoint(Point p);
     void gotoPoint(float x, float y);
-    void gotoTar();
+    // 停车
     void stop();
+    // ------------------------------
 
     // 控制小车平移和旋转，封装的移动控制
     // -------------------------------------
@@ -54,13 +94,13 @@ class DriveControl {
     // 测试函数
     // -------------------------------------
     // 电机PID测试函数
-    void motorPIDTest();
+    void motorPIDTest(int i);
 
     // 电机电压percent转速映射自动测试函数
-    void motorVoltVelTest();
+    void motorVoltVelTest(int i);
     // -------------------------------------
 
-   private:
+private:
     // pos初始化，建立新的世界坐标系
     void posInit();
 
@@ -73,8 +113,8 @@ class DriveControl {
     // speed: 前进速度(百分制);  angleTar: 目标方向(弧度制)
     void driveByAngle(float speed, float angleTar);
 
-    // speed: 旋转速度(百分制);  isClockwise: 旋转方向(是否顺时针)
-    void rotateByDir(float speed, bool isClockwise);
+    // speed: 旋转速度(百分制[-100, 100])
+    void rotateByDir(float speed);
 
     // 更新位置数据
     void posUpdate();
@@ -83,13 +123,13 @@ class DriveControl {
     void motorSpeedUpdate();
 
     // 四轮电机驱动的百分制控制
-    void rotateByPercentageFL(double percent, motorDir dir);
-    void rotateByPercentageFR(double percent, motorDir dir);
-    void rotateByPercentageBL(double percent, motorDir dir);
-    void rotateByPercentageBR(double percent, motorDir dir);
+    void rotateByPercentageFL(double percent, motorDir dir);  // 电机驱动-左前
+    void rotateByPercentageFR(double percent, motorDir dir);  // 电机驱动-右前
+    void rotateByPercentageBL(double percent, motorDir dir);  // 电机驱动-左后
+    void rotateByPercentageBR(double percent, motorDir dir);  // 电机驱动-右后
 
     // 电机转速到电压percent映射函数
-    double motorVel2VoltPercent(double vel);
+    double motorVelToVoltPercent(double vel);
 
     // IMU相关
     // -------------------------------

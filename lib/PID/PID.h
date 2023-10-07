@@ -10,10 +10,10 @@
 #define PID_H
 
 class PID {
-   public:
+public:
     // variables
     float errorNow, errorLast, errorDiff, errorInt;
-    bool init_Flag;
+    bool initFlag;
     float P, I, D;
     float kp, ki, kd;
     float target;
@@ -22,6 +22,7 @@ class PID {
     int secStable;
     int secNow, secLast;
     int IRangeLocal;
+    bool arriveFlag;
 
     // functions
     PID(float _target);

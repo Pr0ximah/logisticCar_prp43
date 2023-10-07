@@ -12,11 +12,11 @@ class Vector;
 
 // 二维点类
 class Point {
-   private:
+private:
     // 坐标
     float x, y;
 
-   public:
+public:
     // 构造函数
     Point();
     Point(float _x, float _y);
@@ -35,10 +35,10 @@ class Point {
 
 // 二维向量类
 class Vector {
-   private:
+private:
     float x, y;
 
-   public:
+public:
     Vector();
     Vector(float x, float y);
     Vector(const Point &pt);

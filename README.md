@@ -23,6 +23,7 @@
 |  |--encoder        编码器类，电机编码器的数据获取。                        <br>
 |  |--PID            PID控制器类。                                       <br>
 |  |--point          点类、向量类，用于计算。                              <br>
+|  |--motor          电机控制类，包含了转速PID                             <br>
 |                                                                       <br>
 |--src                                                                  <br>
 |  |--main.cpp       程序主函数，主入口。

@@ -18,23 +18,20 @@ DriveControl::DriveControl() {
     pinMode(port_motor_BL, OUTPUT);
     pinMode(port_motor_BR, OUTPUT);
 
-    // 电机转速归零
     for (int i = 0; i < 4; i++) {
+        // 电机转速归零
         motorSpeed[i] = 0;
+        // 控制量及PID初始化
+        motorControlVal[i] = 0;
+        motorPid[i].setCoefficient(1.4, 0.1, 11);
     }
 }
 
 void DriveControl::posInit() { posCur.setXY(0, 0); }
 
-void DriveControl::setTar(Point p) { posTar.setXY(p); }
-
-void DriveControl::setTar(float _x, float _y) { posTar.setXY(_x, _y); }
-
-void DriveControl::gotoPoint(Point(p)) { return; }
+void DriveControl::gotoPoint(Point p) { return; }
 
 void DriveControl::gotoPoint(float x, float y) { gotoPoint(Point(x, y)); }
-
-void DriveControl::gotoTar() { gotoPoint(posTar); }
 
 void DriveControl::statusUpdate() {
     // imuUpdate();
@@ -43,10 +40,10 @@ void DriveControl::statusUpdate() {
 }
 
 void DriveControl::driveByAngle(float speed, float dirAngle) {
-    float trans_Angle = dirAngle + PI / 4;
-    double k = 1;
-    double v_1, v_2, v_3, v_4;  // 1-左前,2-右前,3-左后,4-右后
-                                // 左前和右后一直保持一致 右前和左后一直保持一致
+    float trans_Angle = dirAngle + PI / 4;  // 角度换算
+    double k = 1;                           // 归一化系数
+    double v_1, v_2, v_3, v_4;              // 1-左前,2-右前,3-左后,4-右后
+                                            // 左前和右后一直保持一致 右前和左后一直保持一致
     v_1 = speed * cos(trans_Angle);
     v_4 = speed * cos(trans_Angle);
     v_2 = speed * sin(trans_Angle);
@@ -59,18 +56,17 @@ void DriveControl::driveByAngle(float speed, float dirAngle) {
     motorSpeed[1] = v_2 * k;
     motorSpeed[2] = v_3 * k;
     motorSpeed[3] = v_4 * k;
-    motorSpeedUpdate();
+    // motorSpeedUpdate();
 }
 
-void DriveControl::rotateByDir(float speed, bool isClockwise) {
+void DriveControl::rotateByDir(float speed) {
     double k = 1;
     double v_1, v_2, v_3, v_4;  // 1-左前,2-右前,3-左后,4-右后
                                 // 左前和左后一致 右前和右后一致
-    int signR = isClockwise ? -1 : 1;
-    v_1 = -speed * signR;
-    v_2 = speed * signR;
-    v_3 = -speed * signR;
-    v_4 = speed * signR;
+    v_1 = -speed;
+    v_2 = speed;
+    v_3 = -speed;
+    v_4 = speed;
     // 归一化处理
     if (fabs(v_1) > 100 || fabs(v_2) > 100) {
         k = (fabs(v_1) > fabs(v_2)) ? 100 / v_1 : 100 / v_2;
@@ -79,23 +75,21 @@ void DriveControl::rotateByDir(float speed, bool isClockwise) {
     motorSpeed[1] = v_2 * k;
     motorSpeed[2] = v_3 * k;
     motorSpeed[3] = v_4 * k;
-    motorSpeedUpdate();
+    // motorSpeedUpdate();
 }
 
 void DriveControl::stop() {
     for (int i = 0; i < 4; i++) {
         motorSpeed[i] = 0;
     }
-    motorSpeedUpdate();
+    // motorSpeedUpdate();
 }
 
 void DriveControl::posUpdate() {
-    float disWheel[4] = {encoders.encoderFL.getDisOfWheel(),
-                         -encoders.encoderFR.getDisOfWheel(),
-                         encoders.encoderFR.getDisOfWheel(),
-                         -encoders.encoderFL.getDisOfWheel()};
-    posCur.setXY((disWheel[0] - disWheel[1]) / 2,
-                 (disWheel[0] + disWheel[1]) / 2);
+    float disWheel[4] = {encoders.encoderFL.getDisOfWheel(), encoders.encoderFR.getDisOfWheel(),
+                         encoders.encoderBL.getDisOfWheel(), encoders.encoderBR.getDisOfWheel()};
+    posCur.setXY((disWheel[0] - disWheel[1] - disWheel[2] + disWheel[3]) / 4,
+                 (disWheel[0] + disWheel[1] + disWheel[2] + disWheel[3]) / 4);
     // Serial.println(String(posCur.getX()) + " | " + String(posCur.getY()));
 }
 
@@ -107,10 +101,10 @@ void DriveControl::rotateByPercentageFL(double percent, motorDir dir) {
         percent = sign(percent) * 100;
     }
     if (sign(percent) == -1) {
-        digitalWrite(port_dir_FL, LOW);
+        digitalWrite(port_dir_FL, HIGH);
         analogWrite(port_motor_FL, -255 * percent / 100);
     } else {
-        digitalWrite(port_dir_FL, HIGH);
+        digitalWrite(port_dir_FL, LOW);
         analogWrite(port_motor_FL, 255 * percent / 100);
     }
 }
@@ -139,10 +133,10 @@ void DriveControl::rotateByPercentageBL(double percent, motorDir dir) {
         percent = sign(percent) * 100;
     }
     if (sign(percent) == -1) {
-        digitalWrite(port_dir_BL, LOW);
+        digitalWrite(port_dir_BL, HIGH);
         analogWrite(port_motor_BL, -255 * percent / 100);
     } else {
-        digitalWrite(port_dir_BL, HIGH);
+        digitalWrite(port_dir_BL, LOW);
         analogWrite(port_motor_BL, 255 * percent / 100);
     }
 }
@@ -164,121 +158,177 @@ void DriveControl::rotateByPercentageBR(double percent, motorDir dir) {
 }
 
 void DriveControl::motorSpeedUpdate() {
-    Encoder *eTemp[4] = {&encoders.encoderFL, &encoders.encoderFR,
-                         &encoders.encoderFR, &encoders.encoderFL};
+    Encoder *eTemp[4] = {&encoders.encoderFL, &encoders.encoderFR, &encoders.encoderBL, &encoders.encoderBR};
     void (DriveControl::*rotateFunc[4])(double, DriveControl::motorDir) = {
-        &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL,
-        &rotateByPercentageBR};
+        &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL, &rotateByPercentageBR};
+
     for (int i = 0; i < 4; i++) {
         float velPercentTar = motorSpeed[i];
-        if (fabs(velPercentTar) <= 0.02) {
+        if (fabs(velPercentTar) <= 0.1) {
             (this->*rotateFunc[i])(0, FWD);
             continue;
         }
-        float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
-        PID pid(velTar);
-        pid.setCoefficient(0.17, 0.006, 0.3, 0);
-        eTemp[i]->update();
+        float velTar = motorSpeed[i] * MOTOR_MAX_SPEED / 100;
+        motorPid[i].setTar(velTar);
+        eTemp[i]->update(); 
         double vel = eTemp[i]->getAngleVel();
-        if (i % 2) {  // i为奇数，即右侧电机，编码器安装方向相反，需要取负
-            vel = -vel;
-        }
-        double controlVal;
-        if (velPercentTar <= 50) {
-            if (fabs(vel - velTar) <= 50) {
-                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-            } else if (fabs(vel) < fabs(velTar)) {
-                controlVal = motorVel2VoltPercent(velTar);
-                if (fabs(controlVal) < 30) {
-                    controlVal = sign(controlVal) * 30;
-                }
-            } else {
-                controlVal = (fabs(motorVel2VoltPercent(velTar)) - 5) *
-                             sign(motorVel2VoltPercent(velTar));
-            }
-        } else {
-            if (fabs(vel - velTar) <= 1000) {
-                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-            } else {
-                controlVal = sign(velTar) * 70;
-            }
-        }
-        if (sign(controlVal) != sign(velTar)) {
-            controlVal = 0;
-        }
-        (this->*rotateFunc[i])(controlVal, FWD);
+        motorControlVal[i] += motorPid[i].update(vel);
+        (this->*rotateFunc[i])(motorControlVal[i], FWD);
+
+        // 以上部分仅为测试，实际效果非常差劲，到位后u/controlVal会震荡，控制量突变，考虑是kd导致，具体原因待研究
+
+        // if (velPercentTar <= 50) {
+        //     if (fabs(vel - velTar) <= 50) {
+        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+        //     } else if (fabs(vel) < fabs(velTar)) {
+        //         controlVal = motorVelToVoltPercent(velTar);
+        //         if (fabs(controlVal) < 30) {
+        //             controlVal = sign(controlVal) * 30;
+        //         }
+        //     } else {
+        //         controlVal = (fabs(motorVelToVoltPercent(velTar)) - 5) * sign(motorVelToVoltPercent(velTar));
+        //     }
+        // } else {
+        //     if (fabs(vel - velTar) <= 30) {
+        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+        //     } else {
+        //         controlVal = sign(velTar) * 70;
+        //     }
+        // }
+        // if (sign(controlVal) != sign(velTar)) {
+        //     controlVal = 0;
+        // }
+        // (this->*rotateFunc[i])(controlVal, FWD);
+        Serial.print(String(i) + "controlVal: " + motorControlVal[i] + " _ " + "tar: " + String(velTar) + " | ");
     }
+    Serial.println();
 }
 
-void DriveControl::motorPIDTest() {
-    int velPercentTar = -30;
+void DriveControl::motorPIDTest(int i) {
+    Encoder *eTemp[4] = {&encoders.encoderFL, &encoders.encoderFR, &encoders.encoderBL, &encoders.encoderBR};
+    void (DriveControl::*rotateFuncs[4])(double, DriveControl::motorDir) = {
+        &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL, &rotateByPercentageBR};
+
+    Encoder *enc = eTemp[i % 4];
+    void (DriveControl::*rotateFunc)(double, DriveControl::motorDir) = rotateFuncs[i % 4];
+    int velPercentTar = 100;
     float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
-    PID pid(velTar);
-    pid.setIRange(50);
-    pid.setCoefficient(0.17, 0.006, 0.3, 0);
-    encoders.encoderFL.reset();
+
+    struct velPID  // 不退出的增量式PID
+    {
+        float kp, ki, kd, uTol = 50;
+        float error[3] = {0, 0, 0};
+        float u = 0;
+        float tar;
+
+        float update(float input) {
+            error[0] = error[1];
+            error[1] = error[2];
+            error[2] = tar - input;
+            double ki_temp = ki;  // 误差稳定后加ki
+            if (fabs(error[2] - error[1]) > 5) {
+                ki_temp = 0;
+            }
+            u = kp * (error[2] - error[1]) / 10 + ki_temp * (error[2]) / 10 +
+                kd * (error[2] - 2 * error[1] + error[0]) / 10;
+            return u;
+        }
+
+        void setCoefficient(float _kp, float _ki, float _kd, float _uTol = 50) {
+            kp = _kp;
+            ki = _ki;
+            kd = _kd;
+            uTol = _uTol;
+        }
+
+        void setTar(float _tar) { tar = _tar; }
+    } pid;
+
+    pid.setCoefficient(1.4, 0.1, 11);
+    // pid.setCoefficient(1.4, 0.1, 4);     // 空转稳定参数
+    pid.setTar(velTar);
+    enc->reset();
+    double controlVal = 0;
     while (true) {
-        encoders.encoderFL.update();
-        double vel = encoders.encoderFL.getAngleVel();
-        double controlVal;
-        if (velPercentTar <= 50) {
-            if (fabs(vel - velTar) <= 50) {
-                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-            } else if (fabs(vel) < fabs(velTar)) {
-                controlVal = motorVel2VoltPercent(velTar);
-                if (fabs(controlVal) < 30) {
-                    controlVal = sign(controlVal) * 30;
-                }
-            } else {
-                controlVal = (fabs(motorVel2VoltPercent(velTar)) - 5) *
-                             sign(motorVel2VoltPercent(velTar));
-            }
-        } else {
-            if (fabs(vel - velTar) <= 1000) {
-                controlVal = pid.update(vel) + motorVel2VoltPercent(velTar);
-            } else {
-                controlVal = sign(velTar) * 70;
-            }
-        }
-        if (sign(controlVal) != sign(velTar)) {
-            controlVal = 0;
-        }
-        rotateByPercentageFR(controlVal, FWD);
-        rotateByPercentageFL(70, FWD);
-        rotateByPercentageBR(70, FWD);
-        rotateByPercentageBL(controlVal, FWD);
-        delay(10);
+        enc->update();
+        double vel = enc->getAngleVel();
+
+        // if (fabs(vel - velTar) > pidEnterVelDiffThreshold) {
+        //     controlVal = ((vel - velTar < 0) ? 100 : 0);
+        // } else {
+        controlVal += pid.update(vel);
+        // }
+
+        // // 原PID
+        // if (velPercentTar <= 50) {
+        //     if (fabs(vel - velTar) <= 50) {
+        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+        //     } else if (fabs(vel) < fabs(velTar)) {
+        //         controlVal = motorVelToVoltPercent(velTar);
+        //         if (fabs(controlVal) < 30) {
+        //             controlVal = sign(controlVal) * 30;
+        //         }
+        //     } else {
+        //         controlVal = (fabs(motorVelToVoltPercent(velTar)) - 5) * sign(motorVelToVoltPercent(velTar));
+        //     }
+        // } else {
+        //     if (fabs(vel - velTar) <= 30) {
+        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+        //     } else {
+        //         controlVal = sign(velTar) * 70;
+        //     }
+        // }
+
+        // if (sign(controlVal) != sign(velTar)) {
+        //     controlVal = 0;
+        // }
+
+        (this->*rotateFunc)(controlVal, FWD);
+        Serial.println(String(velTar) + " | " + String(vel) + " | " + String(controlVal));
+        delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
     }
 }
 
-void DriveControl::motorVoltVelTest() {
+void DriveControl::motorVoltVelTest(int i) {
+    Encoder *eTemp[4] = {&encoders.encoderFL, &encoders.encoderFR, &encoders.encoderBL, &encoders.encoderBR};
+    void (DriveControl::*rotateFunc[4])(double, DriveControl::motorDir) = {
+        &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL, &rotateByPercentageBR};
+    Serial.println(" VOL | ANGLE_VEL");
+    Serial.println(" --- | ---------");
+    const int SAMPLE_NUM = 10;
     for (int volt = 0; volt <= 100; volt += 5) {
-        rotateByPercentageFR(volt, FWD);
+        (this->*rotateFunc[i])(volt, FWD);
         delay(5000);
-        int numSample = 0;
-        float sample[10];
-        for (int i = 0; i < 10; i++) {
+        int sampleCount = 0;
+        float sample[SAMPLE_NUM];
+        for (int i = 0; i < SAMPLE_NUM; i++) {
             sample[i] = 0;
         }
         int temp = 0;
-        while (numSample < 10) {
-            encoders.encoderFL.update();
+        while (sampleCount < SAMPLE_NUM) {
+            eTemp[i]->update();
             temp++;
             if (temp % 50 == 0) {
-                sample[numSample] = encoders.encoderFL.getAngleVel();
-                numSample++;
+                sample[sampleCount] = eTemp[i]->getAngleVel();
+                sampleCount++;
             }
             delay(10);
         }
         float sum = 0;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < SAMPLE_NUM; i++) {
             sum += sample[i];
         }
+        // 输出格式化
+        String tempStr = "";
+        if (volt < 100) {
+            tempStr = " ";
+        }
+        Serial.println(" " + String(volt) + tempStr + " | " + String(sum / SAMPLE_NUM));
     }
-    rotateByPercentageFR(0, FWD);
+    (this->*rotateFunc[i])(0, FWD);
 }
 
-double DriveControl::motorVel2VoltPercent(double _vel) {
+double DriveControl::motorVelToVoltPercent(double _vel) {
     double vel = fabs(_vel);
     return (0.0003 * pow(vel, 2) - 0.1494 * vel + 37.8040) * (sign(_vel));
 }
@@ -291,15 +341,21 @@ void DriveControl::move(float speed, Vector vec) {
     // 编码器(定位用)初始化
     encoders.encoderFL.reset();
     encoders.encoderFR.reset();
+    encoders.encoderBL.reset();
+    encoders.encoderBR.reset();
 
-    Point pTar = posCur + vec;
+    Point pTar = Point(0, 0) + vec;
     Vector vecToMove = pTar - posCur;
     float disTol = POS_ERROR_TOLERANCE;
     PID pid(0);
-    pid.setCoefficient(1, 0, 0, POS_ERROR_TOLERANCE);
+    if (speed > 70) {
+        pid.setCoefficient(0.4, 0.00001, 1.9, POS_ERROR_TOLERANCE);
+    } else {
+        pid.setCoefficient(0.4, 0.00001, 1.9, POS_ERROR_TOLERANCE);
+    }
     // 当误差距离不小于阈值时
     // 移动控制主循环
-    while (vecToMove.getNorm() >= disTol) {
+    while (vecToMove.getNorm() >= disTol || !pid.arriveFlag) {
         if (vecToMove.getNorm() >= 10) {
             driveByAngle(speed, vecToMove.getAngle());
         } else {
@@ -313,15 +369,18 @@ void DriveControl::move(float speed, Vector vec) {
         statusUpdate();
         vecToMove = pTar - posCur;
         delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
+        Serial.println(String(posCur.getX()) + ", " + String(posCur.getY()));
     }
     stop();
-    delay(500);
+    delay(MOVE_STATUS_INTERVAL);
 }
 
 void DriveControl::rotate(float speed, float angleTar) {
     // 编码器(定位用)初始化
     encoders.encoderFL.reset();
     encoders.encoderFR.reset();
+    encoders.encoderBL.reset();
+    encoders.encoderBR.reset();
     // 已转角度
     double angleCur = 0;
 
@@ -329,27 +388,24 @@ void DriveControl::rotate(float speed, float angleTar) {
     float angleTol = ANGLE_ERROR_TOLERANCE;
     Serial.println(angleTar);
     PID pid(angleTar);
-    pid.setCoefficient(1, 0, 0, 0);
+    pid.setCoefficient(1, 0, 0, ANGLE_ERROR_TOLERANCE);
     // 当误差距离不小于阈值时
     // 旋转控制主循环
-    while (fabs(angleToRotate) >= angleTol) {
-        bool clockwise = (angleTar < 0);
+    while (fabs(angleToRotate) >= angleTol || !pid.arriveFlag) {
         if (fabs(angleToRotate) >= 10) {
-            rotateByDir(speed, clockwise);
+            rotateByDir(speed * sign(angleToRotate));
         } else {
             int controlVal = pid.update(angleCur);
-            if (controlVal >= 20) {
-                controlVal = 20;
+            if (fabs(controlVal) >= 20) {
+                controlVal = 20 * sign(controlVal);
             }
-            rotateByDir(controlVal, clockwise);
+            rotateByDir(controlVal);
         }
         // 更新电机速度
         motorSpeedUpdate();
         // 更新朝向角度
-        float disWheel[4] = {encoders.encoderFL.getDisOfWheel(),
-                             -encoders.encoderFR.getDisOfWheel(),
-                             encoders.encoderFR.getDisOfWheel(),
-                             -encoders.encoderFL.getDisOfWheel()};
+        float disWheel[4] = {encoders.encoderFL.getDisOfWheel(), encoders.encoderFR.getDisOfWheel(),
+                             encoders.encoderBL.getDisOfWheel(), encoders.encoderBR.getDisOfWheel()};
         angleCur = (-disWheel[0] + disWheel[1] - disWheel[2] + disWheel[3]) * 180 / (4 * PI * DIS_WHEEL_TO_CENTER);
 
         angleToRotate = angleTar - angleCur;
@@ -357,7 +413,7 @@ void DriveControl::rotate(float speed, float angleTar) {
         delay(MOVE_STATUS_UPDATE_TIME_INTERVAL);
     }
     stop();
-    delay(500);
+    delay(MOVE_STATUS_INTERVAL);
 }
 
 // IMU已禁用
