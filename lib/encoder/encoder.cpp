@@ -5,33 +5,56 @@
 #include "constDef.h"
 #include "portDef.h"
 
-Encoder EncoderSet::encoderFL(port_Encoder_FL_A, port_Encoder_FL_B,
-                              Encoder_FL_Coefficient);
-Encoder EncoderSet::encoderFR(port_Encoder_FR_A, port_Encoder_FR_B,
-                              Encoder_FR_Coefficient);
+Encoder EncoderSet::encoderFL(port_Encoder_FL_A, port_Encoder_FL_B, Encoder_FL_Coefficient);
+Encoder EncoderSet::encoderFR(port_Encoder_FR_A, port_Encoder_FR_B, Encoder_FR_Coefficient);
+Encoder EncoderSet::encoderBL(port_Encoder_BL_A, port_Encoder_BL_B, Encoder_BL_Coefficient);
+Encoder EncoderSet::encoderBR(port_Encoder_BR_A, port_Encoder_BR_B, Encoder_BR_Coefficient);
 Encoder *EncoderSet::PtEncoderFL = nullptr;
 Encoder *EncoderSet::PtEncoderFR = nullptr;
+Encoder *EncoderSet::PtEncoderBL = nullptr;
+Encoder *EncoderSet::PtEncoderBR = nullptr;
 
 EncoderSet::EncoderSet() {
     PtEncoderFL = &encoderFL;
     PtEncoderFR = &encoderFR;
+    PtEncoderBL = &encoderBL;
+    PtEncoderBR = &encoderBR;
     attachInterrupt(encoderFL.ISR_Port, updateFL, CHANGE);
     attachInterrupt(encoderFR.ISR_Port, updateFR, CHANGE);
+    attachInterrupt(encoderBL.ISR_Port, updateBL, CHANGE);
+    attachInterrupt(encoderBR.ISR_Port, updateBR, CHANGE);
 }
 
-void EncoderSet::updateFL() { PtEncoderFL->updateCount(); }
+void EncoderSet::updateFL() { PtEncoderFL->updateCount(false); }
 
-void EncoderSet::updateFR() { PtEncoderFR->updateCount(); }
+void EncoderSet::updateFR() { PtEncoderFR->updateCount(true); }
 
-Encoder::Encoder(int _portA, int _portB, int _coefficient)
-    : COEFFICIENT_PER_ROUND(_coefficient) {
+void EncoderSet::updateBL() { PtEncoderBL->updateCount(false); }
+
+void EncoderSet::updateBR() { PtEncoderBR->updateCount(true); }
+
+int Encoder::port_to_ISR(int port) {
+    switch (port) {
+        case 2:
+            return 0;
+        case 3:
+            return 1;
+        case 21:
+            return 2;
+        case 20:
+            return 3;
+        case 19:
+            return 4;
+        case 18:
+            return 5;
+    }
+}
+
+Encoder::Encoder(int _portA, int _portB, int _coefficient) : COEFFICIENT_PER_ROUND(_coefficient) {
     portA = _portA;
     portB = _portB;
-    if (portA == 2) {
-        ISR_Port = 0;
-    } else {
-        ISR_Port = 1;
-    }
+
+    ISR_Port = port_to_ISR(portA);
     pulseCount = 0;
     numRound = 0;
     angleLast = 0;
@@ -57,17 +80,13 @@ void Encoder::reset() {
     angleCur = 0;
 }
 
-float Encoder::getAngle() const {
-    return double(pulseCount) / COEFFICIENT_PER_ROUND * 360;
-}
+float Encoder::getAngle() const { return double(pulseCount) / COEFFICIENT_PER_ROUND * 360; }
 
 float Encoder::getAbsoluteAngle() const { return numRound * 360 + getAngle(); }
 
 int Encoder::getRound() const { return numRound; }
 
-float Encoder::getDisOfWheel() const {
-    return PI * WHEEL_DIAMETER * getAbsoluteAngle() / 360;
-}
+float Encoder::getDisOfWheel() const { return PI * WHEEL_DIAMETER * getAbsoluteAngle() / 360; }
 
 void Encoder::update() {
     if (pulseCount <= -COEFFICIENT_PER_ROUND) {
@@ -89,7 +108,7 @@ void Encoder::update() {
     }
     countOfUpdate++;
 
-    if (countOfUpdate % 3 == 0) {
+    if (countOfUpdate % 1 == 0) {
         timeCur = millis();
         angleCur = getAbsoluteAngle();
         if (firstTimeFlag) {
@@ -115,20 +134,25 @@ void Encoder::update() {
     }
 }
 
-void Encoder::updateCount() {
+void Encoder::updateCount(bool R) {
+    //  A  B  R   RES
+    // --------------
+    //  H  L  F    +
+    //  H  H  T    +
+    //  L  H  F    +
+    //  L  L  T    +
+    //  L  H  T    -
+    //  H  L  T    -
+    //  L  L  F    -
+    //  H  H  F    -
+
     cli();
-    if (digitalRead(portA) == LOW) {  // 下降沿
-        if (digitalRead(portB) == LOW) {
-            pulseCount--;
-        } else {
-            pulseCount++;
-        }
+    bool flag;
+    flag = ((digitalRead(portA) == digitalRead(portB)) && R) || ((digitalRead(portA) != digitalRead(portB) && !R));
+    if (flag) {
+        pulseCount++;
     } else {
-        if (digitalRead(portB) == LOW) {  // 上升沿
-            pulseCount++;
-        } else {
-            pulseCount--;
-        }
+        pulseCount--;
     }
     sei();
 }

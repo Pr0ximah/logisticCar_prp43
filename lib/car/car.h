@@ -12,8 +12,8 @@
 #include "drive.h"
 
 class Car {
-   private:
-   public:
+private:
+public:
     DriveControl drive;  // 应该放private！做测试时写到public里
 };
 

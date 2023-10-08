@@ -62,9 +62,7 @@ void Vector::setXY(float _x, float _y) {
 
 float Vector::getNorm() const { return sqrt(x * x + y * y); }
 
-Point Point::operator+(const Vector &vec) {
-    return Point(x + vec.getX(), y + vec.getY());
-}
+Point Point::operator+(const Vector &vec) { return Point(x + vec.getX(), y + vec.getY()); }
 
 float Vector::getAngle() const { return atan2(-x, y); }
 

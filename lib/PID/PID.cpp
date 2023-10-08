@@ -1,15 +1,17 @@
 #include "PID.h"
+
 #include <Arduino.h>
 #include <math.h>
 #include <time.h>
+
 #include "constDef.h"
 
 float PID::update(float current) {
     errorNow = target - current;
     P = kp * errorNow;
-    if (init_Flag) {
+    if (initFlag) {
         errorLast = errorNow;
-        init_Flag = false;
+        initFlag = false;
         errorInt = 0;
     }
     errorDiff = errorNow - errorLast;
@@ -27,17 +29,23 @@ float PID::update(float current) {
     // }
     I = ki * errorInt;
     if (fabs(errorNow) <= errorTol) {
-        if (secStable >= 5) {
-            outVal = 0;
+        if (secStable >= 2) {
+            if (outSetZeroWhenArrive) {
+                outVal = 0;
+            } else {
+                outVal = P + I + D;
+            }
+            arriveFlag = true;
         } else {
             outVal = P + I + D;
+            arriveFlag = false;
         }
     } else {
         secStable = 0;
         outVal = P + I + D;
     }
     secNow = millis() / 1000;
-    if (init_Flag) {
+    if (initFlag) {
         secLast = secNow;
     }
     if (fabs(errorNow <= errorTol)) {
@@ -48,22 +56,26 @@ float PID::update(float current) {
     return outVal;
 }
 
-void PID::setCoefficient(float _kp, float _ki, float _kd, float _error_tol) {
+void PID::setCoefficient(float _kp, float _ki, float _kd, float _error_tol, bool outZeroArrive) {
     kp = _kp;
     ki = _ki;
     kd = _kd;
     errorTol = _error_tol;
+    outSetZeroWhenArrive = outZeroArrive;
+    arriveFlag = false;
 }
 
-PID::PID(float _target): target(_target), init_Flag(true) {
-    IRangeLocal = IRange;
-}
+PID::PID(float _target) : target(_target), initFlag(true) { IRangeLocal = IRange; }
 
 int sign(float x) {
-    if (x == 0) { return 0; }
+    if (x == 0) {
+        return 0;
+    }
     return (x > 0) ? 1 : -1;
 }
 
-void PID::setIRange(int _IRange) {
-    IRangeLocal = _IRange;
-}
+void PID::setIRange(int _IRange) { IRangeLocal = _IRange; }
+
+void PID::reset() { initFlag = true; }
+
+void PID::setTar(float _tar) { target = _tar; }
