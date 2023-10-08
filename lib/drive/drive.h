@@ -16,8 +16,6 @@
 #ifndef DRIVE_H
 #define DRIVE_H
 
-#include <MPU6050.h>
-
 #include "PID.h"
 #include "constDef.h"
 #include "encoder.h"

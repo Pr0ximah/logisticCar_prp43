@@ -22,8 +22,8 @@ DriveControl::DriveControl() {
         // 电机转速归零
         motorSpeed[i] = 0;
         // 电机转速PID初始化
-        motorLowSpeedPID[i].setCoefficient(0.17, 0.006, 0.3, 0, false);
-        motorHighSpeedPID[i].setCoefficient(0.17, 0.006, 0.3, 0, false);
+        motorLowSpeedPID[i].setCoefficient(0, 0, 0, 0, false);
+        motorHighSpeedPID[i].setCoefficient(0.4, 0, 0.25, 0, false);
     }
 }
 
@@ -218,14 +218,11 @@ void DriveControl::motorPIDTest(int i) {
         double vel = eTemp[i]->getAngleVel();
         double controlVal;
 
-        if (velPercentTar <= 50) {
-            controlVal = pid->update(vel);
-        } else {
-            controlVal = pid->update(vel);
-        }
-        if (sign(controlVal) != sign(velTar)) {
-            controlVal = 0;
-        }
+        controlVal = pid->update(vel);
+
+        // if (sign(controlVal) != sign(velTar)) {
+        //     controlVal = 0;
+        // }
         (this->*rotateFuncs[i])(controlVal, FWD);
         Serial.print(String(i) + "-controlVal: " + controlVal + " | tar: " + String(velTar) + " | cur: " + String(vel) +
                      "\n");

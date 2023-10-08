@@ -29,13 +29,14 @@ float PID::update(float current) {
     // }
     I = ki * errorInt;
     if (fabs(errorNow) <= errorTol) {
-        if (secStable >= 2) {
-            if (outSetZeroWhenArrive) {
+        if (outSetZeroWhenArrive) {
+            if (secStable >= 2) {
                 outVal = 0;
+                arriveFlag = true;
             } else {
                 outVal = P + I + D;
+                arriveFlag = false;
             }
-            arriveFlag = true;
         } else {
             outVal = P + I + D;
             arriveFlag = false;
@@ -53,6 +54,9 @@ float PID::update(float current) {
     }
     secLast = secNow;
     errorLast = errorNow;
+
+    Serial.println("P I D: " + String(P) + " " + String(I) + " " + String(D));
+
     return outVal;
 }
 
