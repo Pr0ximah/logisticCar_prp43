@@ -21,11 +21,11 @@ const int port_dir_BR = 6;    // 右后电机方向
 // 电机编码器接口
 const int port_Encoder_FL_A = 2;   // 左前电机编码器A相
 const int port_Encoder_FL_B = 31;  // 左前电机编码器B相
-const int port_Encoder_FR_A = 20;  // 右前电机编码器A相
+const int port_Encoder_FR_A = 18;  // 右前电机编码器A相
 const int port_Encoder_FR_B = 29;  // 右前电机编码器B相
 const int port_Encoder_BL_A = 3;   // 左后电机编码器A相
 const int port_Encoder_BL_B = 30;  // 左后电机编码器B相
-const int port_Encoder_BR_A = 21;  // 右后电机编码器A相
+const int port_Encoder_BR_A = 19;  // 右后电机编码器A相
 const int port_Encoder_BR_B = 28;  // 右后电机编码器B相
 
 #endif  // PORT_DEF_H

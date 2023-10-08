@@ -29,10 +29,10 @@ void loop() {
         // car.drive.encoders.encoderFL.testCoefficient();
         // car.drive.motorPIDTest(0);
         car.drive.move(100, Vector(0, 120));
-        // car.drive.rotate(60, 90);
-        // car.drive.move(40, Vector(0, 100));
-        // car.drive.rotate(60, -90);
-        // car.drive.move(100, Vector(60, 30));
+        car.drive.rotate(60, 90);
+        car.drive.move(40, Vector(0, 100));
+        car.drive.rotate(60, -90);
+        car.drive.move(100, Vector(60, 30));
         // car.drive.rotateByPercentageFL(100, DriveControl::motorDir::FWD);
         // car.drive.rotateByPercentageFR(100, DriveControl::motorDir::FWD);
         // car.drive.rotateByPercentageBL(100, DriveControl::motorDir::FWD);

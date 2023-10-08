@@ -163,43 +163,58 @@ void DriveControl::motorSpeedUpdate() {
         &rotateByPercentageFL, &rotateByPercentageFR, &rotateByPercentageBL, &rotateByPercentageBR};
 
     for (int i = 0; i < 4; i++) {
-        float velPercentTar = motorSpeed[i];
-        if (fabs(velPercentTar) <= 0.1) {
-            (this->*rotateFunc[i])(0, FWD);
-            continue;
-        }
-        float velTar = motorSpeed[i] * MOTOR_MAX_SPEED / 100;
-        motorPid[i].setTar(velTar);
-        eTemp[i]->update(); 
-        double vel = eTemp[i]->getAngleVel();
-        motorControlVal[i] += motorPid[i].update(vel);
-        (this->*rotateFunc[i])(motorControlVal[i], FWD);
+        // float velPercentTar = motorSpeed[i];
+        // if (fabs(velPercentTar) <= 0.1) {
+        //     (this->*rotateFunc[i])(0, FWD);
+        //     continue;
+        // }
+        // float velTar = motorSpeed[i] * MOTOR_MAX_SPEED / 100;
+        // motorPid[i].setTar(velTar);
+        // eTemp[i]->update(); 
+        // double vel = eTemp[i]->getAngleVel();
+        // motorControlVal[i] += motorPid[i].update(vel);
+        // (this->*rotateFunc[i])(motorControlVal[i], FWD);
 
         // 以上部分仅为测试，实际效果非常差劲，到位后u/controlVal会震荡，控制量突变，考虑是kd导致，具体原因待研究
 
-        // if (velPercentTar <= 50) {
-        //     if (fabs(vel - velTar) <= 50) {
-        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
-        //     } else if (fabs(vel) < fabs(velTar)) {
-        //         controlVal = motorVelToVoltPercent(velTar);
-        //         if (fabs(controlVal) < 30) {
-        //             controlVal = sign(controlVal) * 30;
-        //         }
-        //     } else {
-        //         controlVal = (fabs(motorVelToVoltPercent(velTar)) - 5) * sign(motorVelToVoltPercent(velTar));
-        //     }
-        // } else {
-        //     if (fabs(vel - velTar) <= 30) {
-        //         controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
-        //     } else {
-        //         controlVal = sign(velTar) * 70;
-        //     }
+        float velPercentTar = motorSpeed[i];
+        if (fabs(velPercentTar) <= 0.02) {
+            (this->*rotateFunc[i])(0, FWD);
+            continue;
+        }
+        float velTar = velPercentTar * MOTOR_MAX_SPEED / 100;
+        PID pid(velTar);
+        pid.setCoefficient(0.17, 0.006, 0.3, 0);
+        eTemp[i]->update();
+        double vel = eTemp[i]->getAngleVel();
+        // if (i % 2) {  // i为奇数，即右侧电机，编码器安装方向相反，需要取负
+        //     vel = -vel;
         // }
-        // if (sign(controlVal) != sign(velTar)) {
-        //     controlVal = 0;
-        // }
-        // (this->*rotateFunc[i])(controlVal, FWD);
-        Serial.print(String(i) + "controlVal: " + motorControlVal[i] + " _ " + "tar: " + String(velTar) + " | ");
+        double controlVal;
+
+        if (velPercentTar <= 50) {
+            if (fabs(vel - velTar) <= 50) {
+                controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+            } else if (fabs(vel) < fabs(velTar)) {
+                controlVal = motorVelToVoltPercent(velTar);
+                if (fabs(controlVal) < 30) {
+                    controlVal = sign(controlVal) * 30;
+                }
+            } else {
+                controlVal = (fabs(motorVelToVoltPercent(velTar)) - 5) * sign(motorVelToVoltPercent(velTar));
+            }
+        } else {
+            if (fabs(vel - velTar) <= 30) {
+                controlVal = pid.update(vel) + motorVelToVoltPercent(velTar);
+            } else {
+                controlVal = sign(velTar) * 70;
+            }
+        }
+        if (sign(controlVal) != sign(velTar)) {
+            controlVal = 0;
+        }
+        (this->*rotateFunc[i])(controlVal, FWD);
+        // Serial.print(String(i) + "controlVal: " + motorControlVal[i] + " _ " + "tar: " + String(velTar) + " | ");
     }
     Serial.println();
 }
@@ -349,7 +364,7 @@ void DriveControl::move(float speed, Vector vec) {
     float disTol = POS_ERROR_TOLERANCE;
     PID pid(0);
     if (speed > 70) {
-        pid.setCoefficient(0.4, 0.00001, 1.9, POS_ERROR_TOLERANCE);
+        pid.setCoefficient(0.4, 0.00001, 5, POS_ERROR_TOLERANCE);
     } else {
         pid.setCoefficient(0.4, 0.00001, 1.9, POS_ERROR_TOLERANCE);
     }
