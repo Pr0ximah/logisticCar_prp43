@@ -1,3 +1,4 @@
 {
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.sourceDirectory": "C:/prp43_programme/logisticCar_prp43/.pio/libdeps/uno/Adafruit BusIO"
 }
