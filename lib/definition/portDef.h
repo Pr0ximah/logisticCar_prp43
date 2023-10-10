@@ -28,4 +28,14 @@ const int port_Encoder_BL_B = 30;  // 左后电机编码器B相
 const int port_Encoder_BR_A = 19;  // 右后电机编码器A相
 const int port_Encoder_BR_B = 28;  // 右后电机编码器B相
 
+
+
+//机械臂控制接口
+const int plat=0;
+const int on_plat=1;
+const int middle=2;
+const int top=3;
+const int top_seize=7;
+
+
 #endif  // PORT_DEF_H

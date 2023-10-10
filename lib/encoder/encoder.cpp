@@ -108,7 +108,7 @@ void Encoder::update() {
     }
     countOfUpdate++;
 
-    if (countOfUpdate % 1 == 0) {
+    if (countOfUpdate % 3 == 0) {
         timeCur = millis();
         angleCur = getAbsoluteAngle();
         if (firstTimeFlag) {

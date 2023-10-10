@@ -51,6 +51,7 @@ public:
     // -------------------------------------
     // speed: 速度, pTar: 目标点
     void move(float speed, Vector vec);
+    void move(float speed, double x, double y);
     // speed: 速度（>0逆时针转，<0顺时针转）, angleTar: 目标角度(deg)
     void rotate(float speed, float angleTar);
     // -------------------------------------

@@ -10,11 +10,13 @@
 #define CAR_H
 
 #include "drive.h"
-
+#include "robot_arm.h"
 class Car {
 private:
 public:
     DriveControl drive;  // 应该放private！做测试时写到public里
+    RobotArm robotarm;
+    void autoRun();
 };
 
 #endif  // CAR_H

@@ -20,7 +20,7 @@ const float POS_ERROR_TOLERANCE = 3;
 const double ANGLE_ERROR_TOLERANCE = 2;
 
 // 小车两次移动之间的延迟时间(ms)
-const int MOVE_STATUS_INTERVAL = 0;
+const int MOVE_STATUS_INTERVAL = 10;
 
 // // 初始化imu的采样数据数量
 // const int IMUINIT_SAMPLE_NUM = 500;
@@ -44,10 +44,11 @@ const float IRange = 50;
 // 电机满电压转速
 const float MOTOR_MAX_SPEED = 845;
 // 编码器pulseCount与圈数映射系数
-const double Encoder_FL_Coefficient = 1597.2;
-const double Encoder_FR_Coefficient = 1599.6;
-const double Encoder_BL_Coefficient = 1599.6;
-const double Encoder_BR_Coefficient = 1599.6;
+// const double Encoder_FL_Coefficient = 1594.8;
+const double Encoder_FL_Coefficient = 1504.8;
+const double Encoder_FR_Coefficient = 1595;
+const double Encoder_BL_Coefficient = 1598.5;
+const double Encoder_BR_Coefficient = 1688.5;
 // ===================================================
 
 // 以下参数需要测量获得

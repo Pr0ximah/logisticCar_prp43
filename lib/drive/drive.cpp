@@ -22,8 +22,9 @@ DriveControl::DriveControl() {
         // 电机转速归零
         motorSpeed[i] = 0;
         // 电机转速PID初始化
-        motorLowSpeedPID[i].setCoefficient(0, 0, 0, 0, false);
-        motorHighSpeedPID[i].setCoefficient(0.4, 0, 0.25, 0, false);
+        motorLowSpeedPID[i].setCoefficient(0.12, 0.02, 0.1, 0, false);
+        // motorLowSpeedPID[i].setCoefficient(0.2, 0.02, 0.1, 0, false);
+        motorHighSpeedPID[i].setCoefficient(0.18, 0.02, 0.1, 0, false);
     }
 }
 
@@ -37,6 +38,10 @@ void DriveControl::statusUpdate() {
     // imuUpdate();
     posUpdate();
     motorSpeedUpdate();
+}
+
+void DriveControl::move(float speed, double x, double y) {
+    move(speed, Vector(x, y));
 }
 
 void DriveControl::driveByAngle(float speed, float dirAngle) {
@@ -171,7 +176,7 @@ void DriveControl::motorSpeedUpdate() {
             continue;
         }
         PID *pid = nullptr;
-        if (velPercentTar <= 50) {
+        if (velPercentTar <= 80) {
             pid = &motorLowSpeedPID[i];
         } else {
             pid = &motorHighSpeedPID[i];
@@ -182,12 +187,7 @@ void DriveControl::motorSpeedUpdate() {
         eTemp[i]->update();
         double vel = eTemp[i]->getAngleVel();
         double controlVal;
-
-        if (velPercentTar <= 50) {
-            controlVal = pid->update(vel);
-        } else {
-            controlVal = pid->update(vel);
-        }
+        controlVal = pid->update(vel);
         if (sign(controlVal) != sign(velTar)) {
             controlVal = 0;
         }
@@ -278,6 +278,12 @@ void DriveControl::move(float speed, Vector vec) {
         vec = vec * (-1);
     }
 
+    for (int i = 0; i < 4; i++) {
+        motorSpeed[i] = 5;
+    }
+    motorSpeedUpdate();
+    delay(20);
+
     // 编码器(定位用)初始化
     encoders.encoderFL.reset();
     encoders.encoderFR.reset();
@@ -288,15 +294,16 @@ void DriveControl::move(float speed, Vector vec) {
     Vector vecToMove = pTar - posCur;
     float disTol = POS_ERROR_TOLERANCE;
     PID pid(0);
-    if (speed > 70) {
-        pid.setCoefficient(0.4, 0.00001, 5, POS_ERROR_TOLERANCE);
+    if (vec.getNorm() > 30) {
+        pid.setIRange(10);
+        pid.setCoefficient(5, 0.2+0.2, 0.17+0.05, POS_ERROR_TOLERANCE);
     } else {
-        pid.setCoefficient(0.4, 0.00001, 1.9, POS_ERROR_TOLERANCE);
+        pid.setCoefficient(8, 0.4, 0.8, POS_ERROR_TOLERANCE);
     }
     // 当误差距离不小于阈值时
     // 移动控制主循环
     while (vecToMove.getNorm() >= disTol || !pid.arriveFlag) {
-        if (vecToMove.getNorm() >= 10) {
+        if (vecToMove.getNorm() >= max(10,speed/3) ){
             driveByAngle(speed, vecToMove.getAngle());
         } else {
             int controlVal = -pid.update(vecToMove.getNorm());
@@ -328,7 +335,7 @@ void DriveControl::rotate(float speed, float angleTar) {
     float angleTol = ANGLE_ERROR_TOLERANCE;
     Serial.println(angleTar);
     PID pid(angleTar);
-    pid.setCoefficient(1, 0, 0, ANGLE_ERROR_TOLERANCE);
+    pid.setCoefficient(10, 0.5, 10, ANGLE_ERROR_TOLERANCE);
     // 当误差距离不小于阈值时
     // 旋转控制主循环
     while (fabs(angleToRotate) >= angleTol || !pid.arriveFlag) {
